@@ -1,0 +1,2630 @@
+Introduction to Scala
+
+Scala programs can convert to bytecodes and can run on the JVM(Java Virtual Machine).
+
+People always thinks that Scala is a extension of Java. But it is not true. It is just completely interoperable with Java. Scala programs get converted into .class file which contains Java Byte Code after the successful compilation and then can run on JVM(Java Virtual Machine).
+
+After writing the program, save the file with the extension .sc or .scala.
+
+Before installing the Scala on Windows or Linux, you must have Java Development Kit(JDK) 1.8 or greater installed on your system. Because Scala always runs on Java 1.8 or above
+
+// Scala program to print Hello, Geeks! 
+// by using object-oriented approach 
+
+// creating object 
+object Geeks { 
+
+// Main method 
+def main(args: Array[String]) 
+{ 
+	
+	// prints Hello, Geeks! 
+	println("Hello, Geeks!") 
+} 
+} 
+
+
+Single line Comments:
+Syntax:
+// Single line comment
+Multi line comments:
+Syntax:
+
+/* Multi-line comments
+   syntax */
+
+object Geeks: object is the keyword which is used to create the objects. Here “Geeks” is the name of the object.
+
+def main(args: Array[String]): def is the keyword in Scala which is used to define the function and “main” is the name of Main Method. args: Array[String] are used for the command line arguments.
+
+println(“Hello, Geeks!”): println is a method in Scala which is used to display the string on console.
+
+
+Advantages:
+
+Scala’s complex features provided the better coding and efficiency in performance.
+Tuples, macros, and functions are the advancements in Scala.
+It incorporates the object-oriented and functional programming which in turn make it a powerful language.
+It is highly scalable and thus provides a better support for backend operations.
+It reduces the risk associated with the thread-safety which is higher in Java.
+Due to the functional approach, generally, a user ends up with fewer lines of codes and bugs which result in higher productivity and quality.
+Due to lazy computation, Scala computes the expressions only when they are required in the program.
+There are no static methods and variables in Scala. It uses the singleton object(class with one object in the source file).
+It also provides the Traits concept. Traits are the collection of abstract and non-abstract methods which can be compiled into Java interfaces.
+Disadvantages:
+
+Sometimes, two approaches make the Scala hard to understand.
+There is a limited number of Scala developers available in comparison to Java developers.
+It has no true-tail recursive optimization as it runs on JVM.
+It always revolves around the object-oriented concept because every function is value and every value is an object in Scala.
+
+Scala | Functions – Basics:
+
+object GeeksforGeeks { 
+	
+def main(args: Array[String]) { 
+		
+	// Calling the function 
+	println("Sum is: " + functionToAdd(5,3)); 
+} 
+	
+	
+// declaration and definition of function 
+def functionToAdd(a:Int, b:Int) : Int =
+{ 
+		
+	var sum:Int = 0
+	sum = a + b 
+
+	// returning the value of sum 
+	return sum 
+} 
+} 
+
+Scala | Pattern Matching:
+
+// Scala program to illustrate 
+// the pattern matching 
+
+object GeeksforGeeks { 
+	
+	// main method 
+	def main(args: Array[String]) { 
+		
+	// calling test method 
+	println(test(1)); 
+	} 
+
+
+// method containing match keyword 
+def test(x:Int): String = x match { 
+		
+	// if value of x is 0, 
+	// this case will be executed 
+	case 0 => "Hello, Geeks!!"
+		
+	// if value of x is 1, 
+	// this case will be executed 
+	case 1 => "Are you learning Scala?"
+		
+	// if x doesnt match any sequence, 
+	// then this case will be executed 
+	case _ => "Good Luck!!"
+} 
+} 
+
+Scala vs Java
+Java is a general-purpose computer programming language that is concurrent, class-based, object-oriented, etc. Java applications are compiled to bytecode that can run on any Java virtual machine (JVM) regardless of computer architecture.
+
+Scala is a general-purpose, high-level, multi-paradigm programming language. It is a pure object-oriented programming language which also provides the support to the functional programming approach. There is no concept of primitive data as everything is an object in Scala. It is designed to express the general programming patterns in a refined, succinct, and type-safe way.
+
+Below are some major differences between Scala and Java:
+
+SCALA	JAVA
+Scala is a mixture of both object oriented and functional programming.	
+Java is a general purpose object oriented language.
+
+Scala is less readable due to nested code.	
+Java is more readable.
+
+The process of compiling source code into byte code is slow.	
+The process of compiling source code into byte code is fast.
+
+Scala support operator overloading.	Java does not support operator overloading.
+Scala supports lazy evaluation.	Java does not support lazy evaluation.
+
+Scala is not backward compatible.	
+Java is backward compatible means the code written in the new version can also run in older version without any error.
+
+Any method or function present is Scala are treated like they are variable.
+Java treats functions as an object.
+
+In Scala, the code is written in compact form.	
+In Java, the code is written in long form.
+
+Scala variables are by default immutable type.	
+Java variables are by default mutable type.
+
+Scala treated everything as an instance of the class and it is more object oriented language as compare to Java.	
+Java is less object oriented as compare to Scala due to presence of primitives and statics.
+
+Scala does not contain static keyword.	
+Java contains static keyword.
+
+In Scala, all the operations on entities are done by using method calls.	
+In Java, operators are treated differently and is not done with method call.
+
+Scala Map:
+
+Map is a collection of key-value pairs. In other words, it is similar to dictionary. Keys are always unique while values need not be unique. Key-value pairs can have any data type. However, data type once used for any key and value must be consistent throughout. Maps are classified into two types: mutable and immutable. By default Scala uses immutable Map. In order to use mutable Map, we must import scala.collection.mutable.Map class explicitly.
+
+There are three basic operations we can carry out on a Map:
+
+keys: In Scala Map, This method returns an iterable containing each key in the map.
+values: Value method returns an iterable containing each value in the Scala map.
+isEmpty: This Scala map method returns true if the map is empty otherwise this returns false.
+
+// Scala map program of 
+// Accessing Values Using Keys 
+
+// Creating object 
+object GFG 
+{ 
+	// Main method 
+	def main(args:Array[String]) 
+	{ 
+
+		val mapIm = Map("Ajay" -> 30, 
+						"Bhavesh" -> 20, 
+						"Charlie" -> 50) 
+
+		// Accessing score of Ajay 
+		val ajay = mapIm("Ajay") 
+		println(ajay) 
+	} 
+} 
+
+
+// Scala map program of 
+// Accessing Values Using 
+// Keys by contains() function 
+
+// Creating object 
+object GFG 
+{ 
+	
+	// Main methode 
+	def main(args:Array[String]) 
+	{ 
+		val mapIm = Map("Ajay" -> 30, 
+						"Bhavesh" -> 20, 
+						"Charlie" -> 50) 
+		
+		// the key check in the Map 
+		val ajay = if(mapIm.contains("Ajay")) 
+						mapIm("Ajay") else 0
+						
+		val john = if(mapIm.contains("John")) 
+						mapIm("John") else 0
+
+		println("Ajay:" + ajay) 
+		println("John:" + john) 
+	} 
+} 
+
+
+// Scala map program of 
+// Updating the values 
+// in immutable map 
+
+// Creating an object 
+object GFG 
+{ 
+	// Main method 
+	def main(args:Array[String]) 
+	{ 
+
+		val mapIm = Map("Ajay" -> 30, 
+						"Bhavesh" -> 20, 
+						"Charlie" -> 50) 
+			
+		println(mapIm) 
+		
+		//Updating 
+		mapIm("Ajay") = 10
+
+		println(mapIm) 
+
+	} 
+} 
+
+o/p:
+error: value update is not a member of scala.collection.immutable.Map[String, Int]
+
+// Scala map program of 
+// Updating the values 
+// in mutable map 
+
+// Creating Object 
+object GFG 
+{ 
+	
+	// Main method 
+	def main(args:Array[String]) 
+	{ 
+
+		val mapMut = scala.collection.mutable.Map("Ajay" -> 30, 
+												"Bhavesh" -> 20, 
+												"Charlie" -> 50) 
+		println("Before Updating: " + mapMut) 
+
+		// Updating 
+		mapMut("Ajay") = 10
+
+		println("After Updating: " + mapMut) 
+	} 
+} 
+
+
+// Scala map program of 
+// Adding new key-value pair 
+
+// Creating object 
+object GFG 
+{ 
+	
+	// Main method 
+	def main(args:Array[String]) 
+	{ 
+
+		val mapMut = scala.collection.mutable.Map("Ajay" -> 30, 
+												"Bhavesh" -> 20, 
+												"Charlie" -> 50) 
+
+		println("Before Adding: "+mapMut) 
+
+		// Adding a new key "Dinesh" and 
+		// updating an existing key "Ajay" 
+		mapMut += ("Ajay" -> 10, "Dinesh" -> 60) 
+
+		println("After Adding: "+mapMut) 
+	} 
+} 
+
+
+// Scala map program of 
+// Deleting new key-value pair 
+
+// Creating object 
+object GFG 
+{ 
+	
+	// Main method 
+	def main(args:Array[String]) 
+	{ 
+
+		val mapMut = scala.collection.mutable.Map("Ajay" -> 30, 
+												"Bhavesh" -> 20, 
+												"Charlie" -> 50) 
+
+		println("Before Deleting: "+mapMut) 
+
+		// Deleting key-value pairs with 
+		// keys "Ajay" and "Charlie" 
+		mapMut -= ("Ajay", "Charlie") 
+
+		println("After Deleting: " + mapMut) 
+	} 
+} 
+
+
+// Scala map program of 
+// Iteration in a Map 
+
+// Creating object 
+object GFG 
+{ 
+	
+	// Main method 
+	def main(args:Array[String]) 
+	{ 
+
+		val mapMut = scala.collection.mutable.Map("Ajay" -> 30, 
+												"Bhavesh" -> 20, 
+												"Charlie" -> 50) 
+
+		// (k, v) is a tuple with two elements 
+		for((k, v) <- mapMut) 
+		{	 
+			//where k is key and v is value 
+			print("Key:"+k+", ") 
+			println("Value:"+v) 
+		} 
+	} 
+} 
+
+// Scala map program of 
+// Empty Map 
+
+// Creating object 
+object GFG 
+{ 
+	
+	// Main method 
+	def main(args:Array[String]) 
+	{ 
+
+		// Creation of Map having key-value 
+		// pairs of type (String, Int) 
+		val mapMut = scala.collection.mutable.Map[String, Int]() 
+
+		println("Empty Map: " + mapMut) 
+
+		// Adding new entry 
+		mapMut += ("Charlie" -> 50) 
+
+		println("New Entry: " + mapMut) 
+	} 
+} 
+
+
+Set in Scala | Set-1:
+
+A set is a collection which only contains unique items. The uniqueness of a set are defined by the == method of the type that set holds. If you try to add a duplicate item in the set, then set quietly discard your request
+
+// Scala program to illustrate the 
+// use of immutable set 
+import scala.collection.immutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initializing immutable sets 
+		val myset1: Set[String] = Set("Geeks", "GFG", 
+							"GeeksforGeeks", "Geek123") 
+		val myset2 = Set("C", "C#", "Java", "Scala", 
+										"PHP", "Ruby") 
+		
+		// Display the value of myset1 
+		println("Set 1:") 
+		println(myset1) 
+		
+		// Display the value of myset2 using for loop 
+		println("\nSet 2:") 
+		for(myset<-myset2) 
+		{ 
+			println(myset) 
+		} 
+	} 
+} 
+
+// Scala program to illustrate the 
+// use of mutable set 
+import scala.collection.immutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initializing mutable sets 
+		var myset1: Set[String] = Set("Geeks", "GFG", 
+							"GeeksforGeeks", "Geek123") 
+		var myset2 = Set(10, 100, 1000, 10000, 100000) 
+		
+		// Display the value of myset1 
+		println("Set 1:") 
+		println(myset1) 
+		
+		// Display the value of myset2 
+		// using a foreach loop 
+		println("\nSet 2:") 
+		myset2.foreach((item:Int)=>println(item)) 
+	} 
+} 
+
+// Scala program to illustrate the 
+// use of empty set 
+import scala.collection.immutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating empty sets 
+		val myset = Set() 
+		
+		// Display the value of myset 
+		println("The empty set is:") 
+		println(myset) 
+	} 
+} 
+
+// Scala program to get sorted values 
+// from the set 
+import scala.collection.immutable.SortedSet 
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Using SortedSet to get sorted values 
+		val myset: SortedSet[Int] = SortedSet(87, 0, 3, 45, 7, 56, 8,6) 
+		myset.foreach((items: Int)=> println(items)) 
+	} 
+} 
+
+// Scala program to illustrate how to 
+// add items using +=, ++== and add() 
+// method in mutable set with mutable 
+// collection 
+import scala.collection.mutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initilazing set 
+		var myset = Set("G", "Geek", "for") 
+		println("Set before addition "+ 
+				"of new elements:") 
+		println(myset) 
+		
+		// Adding new element in set 
+		// using += and ++== 
+		myset += "Geeks"
+		
+		// Here, "G" is already present in the 
+		// Set so, "G" is not added in set 
+		myset ++== List("Geeks12", "geek23", "G") 
+		
+		// Adding elements using add() method 
+		myset.add("GeeksforGeeks") 
+		myset.add("geeksForgeeks100") 
+		println("\nSet after addition of new elements:") 
+		println(myset) 
+	} 
+} 
+
+// Scala program to illustrate how 
+// to add items using += operator in 
+// mutable set with immutable collection 
+import scala.collection.immutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initializing mutable set 
+		var myset = Set("G", "Geek", "for") 
+		println("Set before addition" + 
+				" of new elements:") 
+		println(myset) 
+		
+		// Adding new element in set 
+		// using += operator 
+		myset += "GeeksforGeeks"
+		myset += "geeks1000"
+	
+		println("\nSet after addition " + 
+				"of new elements:") 
+		println(myset) 
+	} 
+} 
+
+// Scala program to illustrate 
+// how to delete items using -= 
+// and --= methods in mutalbe set 
+// with mutable collection 
+import scala.collection.mutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initilazing 
+		//mutable set 
+		var myset = Set(100, 400, 500, 
+						600, 300, 800) 
+		println("Set before deletion:") 
+		println(myset) 
+		
+		// Deleting elements in set 
+		// using -= and --= methods 
+		myset -= 600
+		myset --= List(300, 100) 
+		println("\nSet after deletion:") 
+		println(myset) 
+	
+	} 
+} 
+
+// Scala program to illustrate 
+// how to delete items using 
+// retain(), and clear() methods 
+// in mutalbe set with mutable 
+// collection 
+import scala.collection.mutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initializing 
+		// mutable set 
+		var myset1 = Set(100, 400, 500, 
+							600,300, 800) 
+		var myset2 = Set(11, 44, 55, 66, 77) 
+		println("Set before deletion:") 
+		println(myset1) 
+		println(myset2) 
+		
+		// Deleting elements in set 
+		// using retain() method 
+		myset1.retain(_>500) 
+		println("\nSet after using retain()" + 
+								" method:") 
+		println(myset1) 
+		
+		// Deleting elements in set 
+		// using clear() method 
+		myset2. clear 
+		println("\nSet after using clear() method:") 
+		println(myset2) 
+	} 
+} 
+
+
+// Scala program to illustrate how 
+// to add elements in immutable set 
+import scala.collection.immutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initilazing 
+		// immutable set 
+		val myset1 = Set(100, 400, 500, 
+						600,300, 800) 
+		val myset2 = Set(11, 44, 55, 66, 77) 
+		println("Set before addition:") 
+		println(myset1) 
+		println(myset2) 
+		println("\nSet after addition:") 
+		
+		// Add single element in myset1 
+		// and create new Set 
+		val S1 = myset1 + 900
+		println(S1) 
+		
+		// Add multiple elements in myset1 
+		// and create new Set 
+		val S2 = myset1 + (200, 300) 
+		println(S2) 
+		
+		// Add another list into myset1 
+		// and create new Set 
+		val S3 = myset1 ++ List(700, 1000) 
+		println(S3) 
+		
+		// Add another set myset2 into 
+		// myset1 and create new Set 
+		val S4 = myset1 ++ myset2
+		println(S4) 
+	} 
+} 
+
+// Scala program to illustrate how 
+// to remove elements in immutable set 
+import scala.collection.immutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initilazing 
+		// immutable set 
+		val myset = Set(100, 400, 500, 600, 
+						300, 800, 900, 700) 
+		println("Set before deletion:") 
+		println(myset) 
+	
+		println("\nSet after deletion:") 
+		
+		// Remove single element in myset and 
+		// Result store into new variable 
+		val S1 = myset - 100
+		println(S1) 
+		
+		// Remove multiple elements from myset 
+		// Result store into new variable 
+		val S2 = myset - (400, 300) 
+		println(S2) 
+		
+		// Remove another list from myset 
+		// Result store into new variable 
+		val S3 = myset -- List(700, 500) 
+		println(S3) 
+	} 
+} 
+
+// Scala program to illustrate union, 
+// intersection, and difference on Set 
+import scala.collection.immutable._
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initializing set 
+		val myset1 = Set(11, 22, 33, 44, 
+						55, 66, 77, 111) 
+		val myset2 = Set(88, 22, 99, 44, 
+							55, 66, 77) 
+		
+		// To find intersection 
+		val S1 = myset1.intersect(myset2) 
+		println("Intersection:") 
+		println(S1) 
+		
+		// To find the symmetric difference 
+		val S2 = myset1.diff(myset2) 
+		println("\nDifference:") 
+		println(S2) 
+		
+		// To find union 
+		val S3 = myset1.union(myset2) 
+		println("\nUnion:") 
+		println(S3) 
+	} 
+} 
+
+
+Inheritance in Scala :
+
+Inheritance is an important pillar of OOP(Object Oriented Programming). It is the mechanism in Scala by which one class is allowed to inherit the features(fields and methods) of another class.
+Important terminology:
+
+Super Class: The class whose features are inherited is known as superclass(or a base class or a parent class).
+Sub Class: The class that inherits the other class is known as subclass(or a derived class, extended class, or child class). The subclass can add its own fields and methods in addition to the superclass fields and methods.
+Reusability: Inheritance supports the concept of “reusability”, i.e. when we want to create a new class and there is already a class that includes some of the code that we want, we can derive our new class from the existing class. By doing this, we are reusing the fields and methods of the existing class.
+
+// Scala program to illustrate the 
+// implementation of inheritance 
+
+// Base class 
+class Geeks1{ 
+	var Name: String = "Ankita"
+} 
+
+// Derived class 
+// Using extends keyword 
+class Geeks2 extends Geeks1
+{ 
+	var Article_no: Int = 130
+	
+	// Method 
+	def details() 
+	{ 
+	println("Author name: " +Name); 
+	println("Total numbers of articles: " +Article_no); 
+	} 
+} 
+
+object Main 
+{ 
+	
+	// Driver code 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating object of derived class 
+		val ob = new Geeks2(); 
+		ob.details(); 
+	} 
+} 
+
+
+// Scala program to illustrate the 
+// Single inheritance 
+
+// Base class 
+class Parent 
+{ 
+	var Name: String = "Ankita"
+} 
+
+// Derived class 
+// Using extends keyword 
+class Child extends Parent 
+{ 
+	var Age: Int = 22
+	
+	// Method 
+	def details() 
+	{ 
+	println("Name: " +Name); 
+	println("Age: " +Age); 
+	} 
+} 
+
+object Main 
+{ 
+	
+	// Driver code 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating object of the derived class 
+		val ob = new Child(); 
+		ob.details(); 
+	} 
+} 
+
+
+// Scala program to illustrate the 
+// Multilevel inheritance 
+
+// Base class 
+class Parent 
+{ 
+	var Name: String = "Soniya"
+} 
+
+// Derived from parent class 
+// Base class for Child2 class 
+class Child1 extends Parent 
+{ 
+	var Age: Int = 32
+} 
+
+// Derived from Child1 class 
+class Child2 extends Child1
+{ 
+	// Method 
+	def details(){ 
+	println("Name: " +Name); 
+	println("Age: " +Age); 
+	} 
+} 
+
+object Main 
+{ 
+	
+	// Drived Code 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating object of the derived class 
+		val ob = new Child2(); 
+		ob.details(); 
+	} 
+} 
+
+
+// Scala program to illustrate the 
+// Hierarchical inheritance 
+
+// Base class 
+class Parent 
+{ 
+	var Name1: String = "Siya"
+	var Name2: String = "Soniya"
+} 
+
+// Derived from the parent class 
+class Child1 extends Parent 
+{ 
+	var Age: Int = 32
+	def details1() 
+	{ 
+	println(" Name: " +Name1); 
+	println(" Age: " +Age); 
+	} 
+} 
+
+// Derived from Parent class 
+class Child2 extends Parent 
+{ 
+	var Height: Int = 164
+	
+	// Method 
+	def details2() 
+	{ 
+	println(" Name: " +Name2); 
+	println(" Height: " +Height); 
+	} 
+} 
+
+object Main 
+{ 
+	
+	// Driver code 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating objects of both derived classes 
+		val ob1 = new Child1(); 
+		val ob2 = new Child2(); 
+		ob1.details1(); 
+		ob2.details2(); 
+	} 
+} 
+
+
+Multiple Inheritance: 
+In Multiple inheritance ,one class can have more than one superclass and inherit features from all parent classes. Scala does not support multiple inheritance with classes, but it can be achieved by traits.
+
+// Scala program to illustrate the 
+// multiple inheritance using traits 
+
+// Trait 1 
+trait Geeks1
+{ 
+	def method1() 
+} 
+
+// Trait 2 
+trait Geeks2
+{ 
+	def method2() 
+} 
+
+// Class that implement both Geeks1 and Geeks2 traits 
+class GFG extends Geeks1 with Geeks2
+{ 
+	
+	// method1 from Geeks1 
+	def method1() 
+	{ 
+		println("Trait 1"); 
+	} 
+	
+	// method2 from Geeks2 
+	def method2() 
+	{ 
+		println("Trait 2"); 
+	} 
+} 
+object Main 
+{ 
+	// Driver code 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating object of GFG class 
+		var obj = new GFG(); 
+		obj.method1(); 
+		obj.method2(); 
+	} 
+} 
+
+
+Hybrid Inheritance:
+It is a mix of two or more of the above types of inheritance. Since Scala doesn’t support multiple inheritance with classes, the hybrid inheritance is also not possible with classes. In Scala, we can achieve hybrid inheritance only through traits.
+
+A-> B  A->C  B&C->D
+
+
+Data Types in Scala:
+
+DATATYPE	DEFAULT VALUE	DESCRIPTION
+Boolean		False	True or False
+Byte		0		8 bit signed value. Range:-128 to 127
+Short		0		16 bit signed value. Range:-215 to 215-1
+Char		‘\u000’		16 bit unsigned unicode character. Range:0 to 216-1
+Int			0		32 bit signed value. Range:-231 to 231-1
+Long		0L		64 bit signed value. Range:-263 to 263-1
+Float		0.0F	32 bit IEEE 754 single-Precision float
+Double		0.0D	64 bit IEEE 754 double-Precision float
+String		null	A sequence of character
+Unit		–		Coinsides to no value.
+Nothing		–		It is a subtype of every other type and it contains no value.
+Any			–		It is a supertype of all other types
+AnyVal		–		It serve as value types.
+AnyRef		–		It serves as reference types.
+
+// Scala program to illustrate Datatypes 
+object Test 
+{ 
+def main(args: Array[String]) 
+{ 
+	var a: Boolean = true
+	var a1: Byte = 126
+	var a2: Float = 2.45673f 
+	var a3: Int = 3
+	var a4: Short = 45
+	var a5: Double = 2.93846523
+	var a6: Char = 'A'
+	if (a == true) 
+	{ 
+	println("boolean:geeksforgeeks") 
+	} 
+	println("byte:" + a1) 
+	println("float:" + a2) 
+	println("integer:" + a3) 
+	println("short:" + a4) 
+	println("double:" + a5) 
+	println("char:" + a6) 
+} 
+} 
+
+
+Scala String
+A string is a sequence of characters. In Scala, objects of String are immutable which means a constant and cannot be changed once created.
+
+Note: If you need to append to the original string, then use StringBuilder class.
+
+// Scala program to illustrate how to 
+// create a string 
+object Main 
+{ 
+	
+	// str1 and str2 are two different strings 
+	var str1 = "Hello! GFG"
+	val str2: String = "GeeksforGeeks"
+	def main(args: Array[String]) 
+	{ 
+		
+		// Display both strings 
+		println(str1); 
+		println(str2); 
+	} 
+} 
+
+// Scala program to illustrate how to 
+// get the length of the given string 
+object Main 
+{ 
+	
+	// str1 and str2 are two strings 
+	var str1 = "Hello! GFG"
+	var str2: String = "GeeksforGeeks"
+	
+	// Main function 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Get the length of str1 and str2 strings 
+		// using length() function 
+		var LEN1 = str1.length(); 
+		var LEN2 = str2.length(); 
+		
+		// Display both strings with their length 
+		println("String 1:" + str1 + ", Length :" + LEN1); 
+		println("String 2:" + str2 + ", Length :" + LEN2); 
+	} 
+} 
+
+
+// Scala program to illustrate how to 
+// concatenate strings 
+object Main 
+{ 
+	
+	// str1 and str2 are two strings 
+	var str1 = "Welcome! GeeksforGeeks "
+	var str2 = " to Portal"
+	
+	// Main function 
+	def main(args: Array[String]) 
+	{ 
+		
+		// concatenate str1 and str2 strings 
+		// using concat() function 
+		var Newstr = str1.concat(str2); 
+		
+		// Display strings 
+		println("String 1:" +str1); 
+		println("String 2:" +str2); 
+		println("New String :" +Newstr); 
+		
+		// Concatenate strings using '+' operator 
+		println("This is the tutorial" + 
+					" of Scala language" + 
+					" on GFG portal"); 
+	} 
+} 
+
+
+// Scala program to illustrate how to 
+// Creating format string 
+object Main 
+{ 
+	
+	// two strings 
+	var A_name = "Ankita "
+	var Ar_name = "Scala|Strings"
+	var total = 130
+	
+	// Main function 
+	def main(args: Array[String]) 
+	{ 
+		
+		// using format() function 
+		println("%s, %s, %d".format(A_name, Ar_name, total)); 
+	} 
+} 
+
+
+char charAt(int index)				This function returns the character at the given index.
+String replace(char ch1, char ch2)	This function returns a new string in which the element of ch1 is 									replaced by the ch2.
+String[] split(String reg)			This function splits the string around matches of the given regular 								expression.
+String substring(int i)				This function returns a new string that is a substring of the given 								string.
+String trim()						This function returns a copy of the string, with starting and ending 									whitespace removed.
+boolean startsWith(String prefix)	This function is used to check if the given string starts with the specified prefix or not.
+
+Break statement in Scala:
+
+In Scala, we use a break statement to break the execution of the loop in the program. Scala programing language does not contain any concept of break statement(in above 2.8 versions), instead of break statement, it provides a break method, which is used to break the execution of a program or a loop. Break method is used by importing scala.util.control.breaks._ package.
+
+
+// Scala program to illustrate the 
+// implementation of break 
+
+// Importing break package 
+import scala.util.control.Breaks._
+object MainObject 
+{ 
+	
+// Main method 
+def main(args: Array[String]) 
+{ 
+	
+	// Here, breakable is used to prevent exception 
+	breakable 
+	{ 
+		for (a <- 1 to 10) 
+		{ 
+			if (a == 6) 
+		
+				// terminate the loop when 
+				// the value of a is equal to 6 
+				break 
+			else
+			println(a); 
+		} 
+	} 
+} 
+} 
+
+
+// Scala program to illustrate the 
+// implementation of break in nested loop 
+
+// Importing break package 
+import scala.util.control._
+
+object Test 
+{ 
+	
+// Main method 
+def main(args: Array[String]) 
+{ 
+	var num1 = 0; 
+	var num2 = 0; 
+	val x = List(5, 10, 15); 
+	val y = List(20, 25, 30); 
+
+	val outloop = new Breaks; 
+	val inloop = new Breaks; 
+	
+	// Here, breakable is used to 
+	// prevent from exception 
+	outloop.breakable 
+	{ 
+		for (num1 <- x) 
+		{ 
+		
+			// print list x 
+			println(" " + num1); 
+
+			inloop.breakable 
+			{ 
+			for (num2 <- y) 
+			{ 
+			
+			//print list y 
+			println(" " + num2); 
+
+			if (num2 == 25) 
+			{ 
+				
+			// inloop is break when 
+			// num2 is equal to 25 
+			inloop.break; 
+			} 
+			} 
+		
+		// Here, inloop breakable 
+			} 
+		} 
+	
+	// Here, outloop breakable 
+	} 
+} 
+} 
+
+
+o/p:
+
+ 5
+ 20
+ 25
+ 10
+ 20
+ 25
+ 15
+ 20
+ 25
+
+  In the above example, the initial value of both num1 and num2 is 0. Now first outer for loop start and print 5 from the x list, then the inner for loop start its working and print 20, 25 from the y list, when the controls go to num2 == 25 condition, then the inner loop breaks. Similarly for 10 and 15.
+
+  Variables in Scala:
+
+Mutable Variables
+var Variable_name: Data_type = "value";
+var name: String = "geekforgeeks";
+
+Immutable Variables
+val Variable_name: Data_type =  "value";
+val name: String = "geekforgeeks";
+
+Scala supports multiple assignments, but you can use multiple assignments only with immutable variables.
+For Example:
+val(name1:Int, name2:String) = pair(2, "geekforgeeks")
+
+Scala Constructors :
+Constructors are used to initializing the object’s state. Like methods, a constructor also contains a collection of statements(i.e. instructions) that are executed at the time of Object creation.
+Scala supports two types of constructors:
+
+Primary Constructor
+Auxiliary Constructor
+
+// Scala program to illustrate the 
+// concept of primary constructor 
+
+// Creating a primary constructor 
+// with parameter-list 
+class GFG(Aname: String, Cname: String, Particle: Int) 
+{ 
+	def display() 
+	{ 
+		println("Author name: " + Aname); 
+		println("Chapter name: " + Cname); 
+		println("Total published articles:" + Particle); 
+	} 
+} 
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating and initialzing 
+		// object of GFG class 
+		var obj = new GFG("Ankita", "Constructors", 145); 
+		obj.display(); 
+	} 
+} 
+
+// Scala program to illustrate the 
+// concept of default primary constructor 
+
+class GFG 
+{ 
+	def display() 
+	{ 
+		println("Welcome to Geeksforgeeks"); 
+	} 
+} 
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating object of GFG class 
+		var obj = new GFG(); 
+		obj.display(); 
+	} 
+} 
+
+
+If the parameters in the constructor parameter-list are declared using var, then the value of the fields may change. And Scala also generates getter and setter methods for that field.
+If the parameters in the constructor parameter-list are declared using val, then the value of the fields cannot change. And Scala also generates a getter method for that field.
+
+class Person1(val firstName:String,
+             val middleName:String, 
+             val lastName:String)
+
+
+If the parameters in the constructor parameter-list are declared without using val or var, then the visibility of the field is very restricted. And Scala does not generate any getter and setter methods for that field.
+
+If we observe this output, we can say that no setter and getter methods are generated for firstName, middleName and lastName Constructor Parameters.
+
+
+If the parameters in the constructor parameter-list are declared using private val or var, then it prevents from generating any getter and setter methods for that field. So, these fields can be accessed by the members of that class.
+In Scala, only a primary constructor is allowed to invoke a superclass constructor.
+In Scala, we are allowed to make a primary constructor private by using a private keyword in between the class name and the constructor parameter-list.
+Syntax:
+// private constructor with two argument
+class GFG private(name: String, class:Int){
+// code..
+}
+
+// private constructor without argument
+class GFG private{
+// code...
+}
+
+Auxiliary Constructor
+In a Scala program, the constructors other than the primary constructor are known as auxiliary constructors. we are allowed to create any number of auxiliary constructors in our program, but a program contains only one primary constructor.
+Syntax:
+
+def this(......)
+Important points:
+
+In a single program, we are allowed to create multiple auxiliary constructors, but they have different signatures or parameter-lists.
+Every auxiliary constructor must call one of the previously defined constructors.
+The invoke constructor may be a primary or another auxiliary constructor that comes textually before the calling constructor.
+The first statement of the auxiliary constructor must contain the constructor call using this.
+
+// Scala program to illustrate the 
+// concept of Auxiliary Constructor 
+
+// Primary constructor 
+class GFG( Aname: String, Cname: String) 
+{ 
+	var no: Int = 0;; 
+	def display() 
+	{ 
+		println("Author name: " + Aname); 
+		println("Chapter name: " + Cname); 
+		println("Total number of articles: " + no); 
+		
+	} 
+	
+	// Auxiliary Constructor 
+	def this(Aname: String, Cname: String, no:Int) 
+	{ 
+		
+		// Invoking primary constructor 
+		this(Aname, Cname) 
+		this.no=no 
+	} 
+} 
+
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating object of GFG class 
+		var obj = new GFG("Anya", "Constructor", 34); 
+		obj.display(); 
+	} 
+} 
+
+
+Scala Singleton and Companion Objects:
+
+Scala is more object oriented language than Java so, Scala does not contain any concept of static keyword. Instead of static keyword Scala has singleton object. A Singleton object is an object which defines a single object of a class. A singleton object provides an entry point to your program execution. If you do not create a singleton object in your program, then your code compile successfully but does not give output. So you required a singleton object to get the output of your program. A singleton object is created by using object keyword.
+
+Syntax:
+
+object Name{
+// code...
+}
+
+Important points about singleton object:
+
+The method in the singleton object is globally accessible.
+You are not allowed to create an instance of singleton object.
+You are not allowed to pass parameter in the primary constructor of singleton object.
+In Scala, a singleton object can extend class and traits.
+In Scala, a main method is always present in singleton object.
+The method in the singleton object is accessed with the name of the object(just like calling static method in Java), so there is no need to create an object to access this method.
+
+// A simple Scala program to illustrate 
+// the concept of singleton object 
+
+class AreaOfRectangle 
+{ 
+	
+	// Variables 
+	var length = 20; 
+	var height = 40; 
+	
+	// Method which gives the area of the rectangle 
+	def area() 
+	{ 
+		var ar = length * height; 
+		println("Height of the rectangle is:" + height); 
+		println("Length of the rectangle is:" + length); 
+		println("Area of the rectangle is :" + ar); 
+	} 
+} 
+
+// singleton object 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating object of AreaOfRectangle class 
+		var obj = new AreaOfRectangle(); 
+		obj.area(); 
+	} 
+} 
+
+
+// A Scala program to illustrate 
+// how to call method inside singleton object 
+
+// Singleton object with named 
+// as Exampleofsingleton 
+object Exampleofsingleton 
+{ 
+	
+	// Varaibles of singleton object 
+	var str1 = "Welcome ! GeeksforGeeks"; 
+	var str2 = "This is Scala language tutorial"; 
+	
+	// Method of singleton object 
+	def display() 
+	{ 
+		println(str1); 
+		println(str2); 
+	} 
+} 
+
+// Singleton object with named as Main 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Calling method of singleton object 
+		Exampleofsingleton.display(); 
+	} 
+} 
+
+
+Companion Object:
+
+Companion object is known as an object whose name is same as the name of the class. Or In other words, when an object and a class have the same name, then that object is known as the companion object and the class is known as companion class. A companion object is defined in the same source file in which the class is defined. A companion object is allowed to access both private methods and private fields of the class.
+
+// A Scala program to illustrate 
+// the concept of the Companion object 
+
+// Companion class 
+class ExampleofCompanion 
+{ 
+	
+	// Variables of Companion class 
+	var str1 = "GeeksforGeeks"; 
+	var str2 = "Tutorial of Companion object"; 
+	
+	// Method of Companion class 
+	def show() 
+	{ 
+		println(str1); 
+		println(str2); 
+	} 
+} 
+
+// Companion object 
+object ExampleofCompanion 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		var obj = new ExampleofCompanion(); 
+		obj.show(); 
+	} 
+} 
+
+Method Overloading in Scala:
+
+Method Overloading is the common way of implementing polymorphism. It is the ability to redefine a function in more than one form. A user can implement function overloading by defining two or more functions in a class sharing the same name. Scala can distinguish the methods with different method signatures. i.e. the methods can have the same name but with different parameter list (i.e. the number of the parameters, the order of the parameters, and data types of the parameters) within the same class.
+
+Overloaded methods are differentiated based on the number and type of the parameters passed as an argument to the methods.
+We can not define more than one method with the same name, Order and the type of the arguments. It would be a compiler error.
+The compiler does not consider the return type while differentiating the overloaded method. But you cannot declare two methods with the same signature and different return type. It will throw a compile-time error.
+
+Method overloading can be done by changing:
+
+The number of parameters in two methods.
+The data types of the parameters of methods.
+The Order of the parameters of methods.
+
+// Scala program to demonstrate the function 
+// overloading by changing the number 
+// of parameters 
+class GFG 
+{ 
+	
+	// function 1 with two parameters 
+	def fun(p:Int, q:Int) 
+	{ 
+		var Sum = p + q; 
+		println("Sum in function 1 is:" + Sum); 
+	} 
+	
+	// function 2 with three parameters 
+	def fun(p:Int, q:Int, r:Int) 
+	{ 
+		var Sum = p + q + r; 
+		println("Sum in function 2 is:" + Sum); 
+	} 
+} 
+object Main 
+{ 
+	// Main function 
+	def main(args: Array[String]) 
+	{ 
+		
+	// Creating object of GFG class 
+	var obj = new GFG(); 
+	obj.fun(6, 8); 
+	obj.fun(5, 10, 58); 
+	} 
+} 
+
+// Scala program to demonstrate the function 
+// overloading by changing the data types 
+// of the parameters 
+class GFG 
+{ 
+	
+	// Adding three integer elements 
+	def fun(p:Int, q:Int, r:Int) 
+	{ 
+		var Sum = p + q + r; 
+		println("Sum in function 1 is:"+Sum); 
+	} 
+	
+	// Adding three double elements 
+	def fun(p:Double, q:Double, r:Double) 
+	{ 
+		var Sum = p + q + r; 
+		println("Sum in function 2 is:"+Sum); 
+	} 
+} 
+object Main 
+{ 
+	// Main method 
+	def main(args: Array[String]) 
+	{ 
+		
+	// Creating object of GFG class 
+	var obj = new GFG(); 
+	obj.fun(6, 8, 10); 
+	obj.fun(5.9, 10.01, 58.7); 
+	} 
+} 
+
+// Scala program to demonstrate the function 
+// overloading by changing the 
+// order of the parameters 
+class GFG 
+{ 
+	
+	// Function 1 
+	def fun(name:String, No:Int) 
+	{ 
+		println("Name of the watch company is:" + name); 
+		println("Total number of watch :" + No); 
+	} 
+	
+	// Function 2 
+	def fun(No:Int, name:String ) 
+	{ 
+		println("Name of the watch company is:" + name); 
+		println("Total number of watch :" + No); 
+	} 
+} 
+object Main 
+{ 
+	// Main Function 
+	def main(args: Array[String]) 
+	{ 
+		
+	// Creating object of GFG class 
+	var obj = new GFG(); 
+	obj.fun("Rolex", 10); 
+	obj.fun("Omega", 10); 
+	} 
+} 
+
+What happens when method signature is same and the return type is different?
+
+The compiler will give error as the return value alone is not sufficient for the compiler to figure out which function it has to call. Only if both methods have different parameter types (so, they have the different signature), then Method overloading is possible.
+
+// Example to show error when method signature is same 
+// and return type is different. 
+object Main { 
+		
+		// Main method 
+		def main(args: Array[String]) { 
+	println("Sum in function 1 is:" + fun(6, 8) ); 
+	println("Sum in function 2 is:" + fun(6, 8) ); 
+	} 
+	
+	// function 1 
+	def fun(p:Int, q:Int) : Int = { 
+		var Sum: Int = p + q; 
+		return Sum; 
+		
+	} 
+	
+// function 2 
+	def fun(p:Int, q:Int) : Double = { 
+		var Sum: Double = p + q + 3.7; 
+		return Sum; 
+	} 
+	
+	
+
+} 
+
+Compile-time Error:
+prog.scala:10: error: ambiguous reference to overloaded definition,
+both method fun in object Main of type (p: Int, q: Int)Double
+and method fun in object Main of type (p: Int, q: Int)Int
+match argument types (Int,Int) and expected result type Any
+println(“Sum in function 1 is:” + fun(6, 8) );
+
+
+Inner class in Scala:
+
+Inner class means defining a class into another. This feature enables the user to logically group classes that are only used in one place, thus this increases the use of encapsulation, and create more readable and maintainable code. In Scala, the concept of inner classes is different from Java. Like in Java, the inner class is the member of the outer class, but in Scala, the inner class is bound to the outer object.
+Syntax:
+
+class Outer_class{
+class Inner_class{
+// Code..
+}
+}
+
+// Scala program to illustrate how to 
+// create inner class 
+
+// Outer class 
+class Geek 
+{ 
+	
+	// Inner class 
+	class G1
+	{ 
+		var a = 0
+		def method() 
+		{ 
+			for(a<-0 to 3) 
+			{ 
+				println("Welcome to inner class: G1"); 
+			} 
+		} 
+	} 
+} 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating object of the outer and 
+		// inner class Here, G1 class is 
+		// bounded with the object of Geek class 
+		val obj = new Geek(); 
+		val o = new obj.G1; 
+		o.method(); 
+	} 
+} 
+
+How to create class inside object and object inside class:
+
+In Scala, we can also include a class inside an object or an object inside a class. Let’s discuss with an example. In the below example, first, we create an object inside a class and access the method of the object with the help of new keyword followed by the class name, object name and method name like as shown in the following statement:
+
+new outer_class().inner_object.method;
+
+Now, second, we create a class inside an object and access the methods present in the class accessed with the help of new keyword followed by the object name, class name and method name, as shown in the following statement:
+
+new outer_object.inner_class().method; 
+
+// Scala program to illustrate how to 
+// create an object inside a class, Or 
+// a class inside an object 
+
+// Class inside Object 
+class outer_class 
+{ 
+	object inner_object 
+	{ 
+		val q = 0; 
+		def method() 
+		{ 
+			for(q <- 0 to 2) 
+			{ 
+				println("object inside a class example") 
+			} 
+			println() 
+		} 
+	} 
+} 
+
+// Object inside Class 
+object outer_object 
+{ 
+	class inner_class 
+	{ 
+		val s = 0; 
+		def method() 
+		{ 
+			for(s <- 0 to 2) 
+			{ 
+				println("class inside an object example") 
+			} 
+		} 
+	} 
+} 
+
+object Main 
+{ 
+	
+	// Main method 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Object inside a class 
+		new outer_class().inner_object.method; 
+		
+		// Class inside an object 
+		new outer_object.inner_class().method; 
+	} 
+} 
+
+
+For Loop in Scala:
+
+// Scala program to illustrate how to 
+// create for loop using to 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		println("The value of w is:"); 
+		
+		// Here, the for loop starts from 0 
+		// and ends at 10 
+		for( w <- 0 to 10) 
+		{ 
+			println(w); 
+		} 
+	} 
+} 
+
+// Scala program to illustrate how to 
+// create for loop using until 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		println("The value of w is:"); 
+		
+		// Here, the for loop starts from 0 
+		// and ends at 10 
+		for( w <- 0 until 10) 
+		{ 
+			println(w); 
+		} 
+	} 
+} 
+
+// Scala program to illustrate how to 
+// create multiple ranges in for loop 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		
+	// for loop with multiple ranges 
+		for( w <- 0 to 3; z<- 8 until 10 ) 
+		{ 
+			println("Value of w is :" +w); 
+			println("Value of y is :" +z); 
+		} 
+	} 
+} 
+
+// Scala program to illustrate how to 
+// use for loop with collection 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		var rank = 0; 
+		val ranklist = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); 
+		
+		// For loop with collection 
+		for( rank <- ranklist){ 
+			println("Author rank is : " +rank); 
+		} 
+	} 
+} 
+
+// Scala program to illustrate how to 
+// use for loop with filters 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		var rank = 0; 
+		val ranklist = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); 
+		
+		// For loop with filters 
+		for( rank <- ranklist 
+		if rank < 7; if rank > 2 ) 
+		{ 
+			println("Author rank is : " +rank); 
+		} 
+	} 
+} 
+
+Output:
+
+Author rank is : 3
+Author rank is : 4
+Author rank is : 5
+Author rank is : 6
+
+Using for-loop with Yeild:
+
+In Scala, the return value of the for loop is stored in a variable or may return through a function. To do this you should use yield keyword to prefix the body of for loop.
+
+Syntax:
+var output = for{ i<- List
+if condition 1; if condition 2; 
+} 
+yeild i
+
+// Scala program to illustrate how to 
+// use for loop with yields 
+object Main 
+{ 
+	def main(args: Array[String]) 
+	{ 
+		var rank = 0; 
+		val ranklist = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); 
+		
+		// For loop with yields 
+		var output = for{ rank <- ranklist 
+					if rank > 4; if rank != 8 } 
+					yield rank 
+		
+		// Display result 
+		for (rank <- output) 
+		{ 
+			println("Author rank is : " + rank); 
+		} 
+	} 
+} 
+
+In the above example, the output is a variable where all the values of rank are stored in the form of a collection. And the for loop display only those Author’s rank whose rank is greater than 4 and not equal to rank 8.
+
+Class and Object in Scala:
+
+Class
+
+A class is a user-defined blueprint or prototype from which objects are created. Or in other words, a class combines the fields and methods(member function which defines actions) into a single unit. Basically, in a class constructor is used for initializing new objects, fields are variables that provide the state of the class and its objects, and methods are used to implement the behavior of the class and its objects.
+
+// A Scala program to illustrate 
+// how to create a class 
+
+// Name of the class is Smartphone 
+class Smartphone 
+{ 
+	
+	// Class variables 
+	var number: Int = 16
+	var nameofcompany: String = "Apple"
+	
+	// Class method 
+	def Display() 
+	{ 
+		println("Name of the company : " + nameofcompany); 
+		println("Total number of Smartphone generation: " + number); 
+	} 
+} 
+object Main 
+{ 
+	
+	// Main method 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Class object 
+		var obj = new Smartphone(); 
+		obj.Display(); 
+	} 
+} 
+
+Objects
+It is a basic unit of Object Oriented Programming and represents the real-life entities. A typical Scala program creates many objects, which as you know, interact by invoking methods. An object consists of :
+
+State: It is represented by attributes of an object. It also reflects the properties of an object.
+Behavior: It is represented by methods of an object. It also reflects the response of an object with other objects.
+Identity: It gives a unique name to an object and enables one object to interact with other objects.
+
+// A Scala program to illustrate the 
+// Initialization of an object 
+
+// Class with primary constructor 
+class Dog(name:String, breed:String, age:Int, color:String ) 
+{ 
+		println("My name is:" + name + " my breed is:" + breed); 
+		println("I am: " + age + " and my color is :" + color); 
+	
+} 
+object Main 
+{ 
+	
+	// Main method 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Class object 
+		var obj = new Dog("tuffy", "papillon", 5, "white"); 
+	} 
+} 
+
+Anonymous object:
+Anonymous objects are the objects that are instantiated but does not contain any reference, you can create an anonymous object when you do not want to reuse it.
+
+// Scala program to illustrate how 
+// to create an Anonymous object 
+
+class GFG 
+{ 
+	def display() 
+	{ 
+		println("Welocme! GeeksforGeeks"); 
+	} 
+} 
+object Main 
+{ 
+	
+	// Main method 
+	def main(args: Array[String]) 
+	{ 
+		
+		// Creating Anonymous object of GFG class 
+		new GFG().display(); 
+	} 
+} 
+
+
+Scala - Closures
+A closure is a function, whose return value depends on the value of one or more variables declared outside this function.
+
+val multiplier = (i:Int) => i * 10
+
+object Demo {
+   def main(args: Array[String]) {
+      println( "multiplier(1) value = " +  multiplier(1) )
+      println( "multiplier(2) value = " +  multiplier(2) )
+   }
+   var factor = 3
+   val multiplier = (i:Int) => i * factor
+}
+
+
+Scala - Arrays
+
+array, which stores a fixed-size sequential collection of elements of the same type
+
+object Demo {
+   def main(args: Array[String]) {
+      var myList = Array(1.9, 2.9, 3.4, 3.5)
+      
+      // Print all the array elements
+      for ( x <- myList ) {
+         println( x )
+      }
+
+      // Summing all elements
+      var total = 0.0;
+      
+      for ( i <- 0 to (myList.length - 1)) {
+         total += myList(i);
+      }
+      println("Total is " + total);
+
+      // Finding the largest element
+      var max = myList(0);
+      
+      for ( i <- 1 to (myList.length - 1) ) {
+         if (myList(i) > max) max = myList(i);
+      }
+      
+      println("Max is " + max);
+   }
+}
+
+Multi-Dimensional Arrays
+
+import Array._
+
+object Demo {
+   def main(args: Array[String]) {
+      var myMatrix = Array.ofDim[Int](3,3)
+      
+      // build a matrix
+      for (i <- 0 to 2) {
+         for ( j <- 0 to 2) {
+            myMatrix(i)(j) = j;
+         }
+      }
+      
+      // Print two dimensional array
+      for (i <- 0 to 2) {
+         for ( j <- 0 to 2) {
+            print(" " + myMatrix(i)(j));
+         }
+         println();
+      }
+   }
+}
+
+Concatenate Arrays
+
+import Array._
+
+object Demo {
+   def main(args: Array[String]) {
+      var myList1 = Array(1.9, 2.9, 3.4, 3.5)
+      var myList2 = Array(8.9, 7.9, 0.4, 1.5)
+
+      var myList3 =  concat( myList1, myList2)
+      
+      // Print all the array elements
+      for ( x <- myList3 ) {
+         println( x )
+      }
+   }
+}
+
+import Array._
+
+object Demo {
+   def main(args: Array[String]) {
+      var myList1 = range(10, 20, 2)
+      var myList2 = range(10,20)
+
+      // Print all the array elements
+      for ( x <- myList1 ) {
+         print( " " + x )
+      }
+      
+      println()
+      for ( x <- myList2 ) {
+         print( " " + x )
+      }
+   }
+}
+
+Scala - Regular Expressions
+
+import scala.util.matching.Regex
+
+object Demo {
+   def main(args: Array[String]) {
+      val pattern = "Scala".r
+      val str = "Scala is Scalable and cool"
+      
+      println(pattern findFirstIn str)
+   }
+}
+
+Scala - Exception Handling
+
+import java.io.FileReader
+import java.io.FileNotFoundException
+import java.io.IOException
+
+object Demo {
+   def main(args: Array[String]) {
+      try {
+         val f = new FileReader("input.txt")
+      } catch {
+         case ex: FileNotFoundException =>{
+            println("Missing file exception")
+         }
+         
+         case ex: IOException => {
+            println("IO Exception")
+         }
+      }
+   }
+}
+
+Scala - Extractors
+
+Let us take an example of object defines both apply and unapply methods. The apply method has the same meaning as always: it turns Test into an object that can be applied to arguments in parentheses in the same way a method is applied. So you can write Test ("Zara", "gmail.com") to construct the string "Zara@gmail.com".
+
+The unapply method is what turns Test class into an extractor and it reverses the construction process of apply. Where apply takes two strings and forms an email address string out of them, unapply takes an email address and returns potentially two strings: the user and the domain of the address.
+
+The unapply must also handle the case where the given string is not an email address. That's why unapply returns an Option-type over pairs of strings. Its result is either Some (user, domain) if the string str is an email address with the given user and domain parts, or None, if str is not an email address. Here are some examples as follows.
+
+object Demo {
+   def main(args: Array[String]) {
+      println ("Apply method : " + apply("Zara", "gmail.com"));
+      println ("Unapply method : " + unapply("Zara@gmail.com"));
+      println ("Unapply method : " + unapply("Zara Ali"));
+   }
+   
+   // The injection method (optional)
+   def apply(user: String, domain: String) = {
+      user +"@"+ domain
+   }
+
+   // The extraction method (mandatory)
+   def unapply(str: String): Option[(String, String)] = {
+      val parts = str split "@"
+      
+      if (parts.length == 2){
+         Some(parts(0), parts(1)) 
+      } else {
+         None
+      }
+   }
+}
+
+import scala.util.matching.Regex
+
+object Demo {
+   def main(args: Array[String]) {
+      val pattern = new Regex("(S|s)cala")
+      val str = "Scala is scalable and cool"
+      
+      println((pattern findAllIn str).mkString(","))
+   }
+}
+
+object Demo {
+   def main(args: Array[String]) {
+      val pattern = "(S|s)cala".r
+      val str = "Scala is scalable and cool"
+      
+      println(pattern replaceFirstIn(str, "Java"))
+   }
+}
+
+import scala.util.matching.Regex
+
+object Demo {
+   def main(args: Array[String]) {
+      val pattern = new Regex("abl[ae]\\d+")
+      val str = "ablaw is able1 and cool"
+      
+      println((pattern findAllIn str).mkString(","))
+   }
+}
+
+https://www.journaldev.com/8256/scala-regular-expression-example
+
+Pattern Matching with Extractors
+When an instance of a class is followed by parentheses with a list of zero or more parameters, the compiler invokes the apply method on that instance. We can define apply both in objects and in classes.
+
+As mentioned above, the purpose of the unapply method is to extract a specific value we are looking for. It does the opposite operation apply does. When comparing an extractor object using the match statement the unapply method will be automatically executed.
+
+object Demo {
+   def main(args: Array[String]) {
+      val x = Demo(5)
+      println(x)
+
+      x match {
+         case Demo(num) => println(x+" is bigger two times than "+num)
+         
+         //unapply is invoked
+         case _ => println("i cannot calculate")
+      }
+   }
+   def apply(x: Int) = x*2
+   def unapply(z: Int): Option[Int] = if (z%2==0) Some(z/2) else None
+}
+
+Scala - Files I/O:
+
+import java.io._
+
+object Demo {
+   def main(args: Array[String]) {
+      val writer = new PrintWriter(new File("test.txt" ))
+
+      writer.write("Hello Scala")
+      writer.close()
+   }
+}
+
+Reading a Line from Command Line:
+
+object Demo {
+   def main(args: Array[String]) {
+      print("Please enter your input : " )
+      val line = Console.readLine
+      
+      println("Thanks, you just typed: " + line)
+   }
+}
+
+Reading File Content:
+
+import scala.io.Source
+
+object Demo {
+   def main(args: Array[String]) {
+      println("Following is the content read:" )
+
+      Source.fromFile("Demo.txt" ).foreach { 
+         print 
+      }
+   }
+}
+
+TAIL RECURSION:
+
+ In fact, it turns out that if you have a recursive function that calls itself as its last action, then you can reuse the stack frame of that function. This is called tail recursion.
+
+ Example : Factorial program 
+
+ Recursion at the ened of the function .
+
+HIGHER-ORDER FUNCTIONS:
+Functional languages treat functions as first-class values.
+
+This means that, like any other value, a function can be passed as a parameter and returned as a result.
+
+This provides a flexible way to compose programs.
+
+Functions that take other functions as parameters or that return functions as results are called higher order functions.
+
+def sumFactorials(a: Int, b: Int): Int =
+  if (a > b) 0 else factorial(a) + sumFactorials(a + 1, b)
+
+  def sum(f: Int => Int, a: Int, b: Int): Int =
+  if (a > b) 0
+  else f(a) + sum(f, a + 1, b)
+
+val squareSum = (x: Int, y: Int) => (x*x + y*y)
+val cubeSum = (x: Int, y: Int) => (x*x*x + y*y*y)
+val intSum = (x: Int, y: Int) => (x + y)
+val squaredSum = addition(squareSum, 1, 2)
+val cubedSum = addition(cubeSum, 1, 2)
+val normalSum = addition(intSum, 1, 2)
+
+def operateList(list: List[Int], f: (Int, Int) => Int, operation: String): Int = {
+def inner(list: List[Int], result: Int): Int = {
+list match {
+case head :: tail => inner(tail, f(head, result))
+case Nil => result
+}
+}
+operation.toLowerCase match {
+case "product" => inner(list, 1)
+case "sum" => inner(list, 0)
+}
+}
+
+
+  ANONYMOUS FUNCTIONS:
+Passing functions as parameters leads to the creation of many small functions.
+
+(x: Int) => x * x * x
+
+
+Top Types
+At the top of the type hierarchy we find:
+
+Any:
+The base type of all types
+Methods: ==, !=, equals, hashCode, toString
+AnyRef:
+The base type of all reference types
+Alias of java.lang.Object
+AnyVal:
+The base type of all primitive types
+
+
+Nothing :
+is at the bottom of Scala's type hierarchy. It is a subtype of every other type.
+
+There is no value of type Nothing.
+
+Why is that useful?
+
+To signal abnormal termination
+As an element type of empty collections
+
+The Null Type:
+Every reference class type also has null as a value.
+
+The type of null is Null.
+
+Null is a subtype of every class that inherits from Object; it is incompatible with subtypes of AnyVal.
+
+val x = null // x: Null
+val y: String = null // y: String
+val z: Int = null    // error: type mismatch
+
+Lazy Evaluation :
+
+lazy val x = expr
+
+
+What is case class? What is case object? What are the Advantages of
+case class?
+Scala Interview Questions - JournalDev
+
+Case class is a class which is de􀃚ned with “case class” keywords. Case object is an object which is de􀃚ned
+with “case object” keywords. Because of this “case” keyword, we will get some bene􀃚ts to avoid boilerplate
+code.
+We can create case class objects without using “new” keyword. By default, Scala compiler pre􀃚xes “val” for
+all constructor parameters. That’s why without using val or var, Case class’s constructor parameters will
+become class members, it is not possible for normal classes.
+
+Advantages of case class:
+By default, Scala Compiler adds toString, hashCode and equals methods. We can avoid writing this
+boilerplate code.
+By default, Scala Compiler adds companion object with apply and unapply methods that’s why we
+don’t need new keyword to create instances of a case class.
+By default, Scala Compiler adds copy method too.
+We can use case classes in Pattern Matching.
+By default, Case class and Case Objects are Serializable.
+
+What is the di􀃙erence between Case Object and Object(Normal
+Object)?
+Normal object is created using “object” keyword. By default, It’s a singleton object.
+object MyNormalObject
+Case Object is created using “case object” keywords.By default, It’s also a singleton object
+case object MyCaseObject
+By Default, Case Object gets toString and hashCode methods. But normal object cannot.
+By Default, Case Object is Serializable. But normal object is not.
+
+isInstanceOf and asInstanceOf methods:
+
+“isInstanceOf” method is used to test whether the object is of a given type or not. 
+>str.isInstanceOf[String]
+
+“asInstanceOf” method is used to cast the object to the given a type.
+> val str = "Hello".asInstanceOf[String]
+
+
+Di􀃙erence between Array and List in Scala?
+Arrays are always Mutable where as List is always Immutable.
+Once created, We can change Array values where as we cannot change List Object.
+Arrays are 􀃚xed-size data structures where as List is variable-sized data structures. List’s size is
+automatically increased or decreased based on it’s operations we perform on it.
+Arrays are Invariants where as Lists are Covariants.
+
+
+A Diamond Problem is a Multiple Inheritance problem.
+
+trait A{
+def display(){ println("From A.display") }
+}
+trait B extends A{
+override def display() { println("From B.display") }
+}
+trait C extends A{
+override def display() { println("From C.display") }
+}
+class D extends B with C{ }
+object ScalaDiamonProblemTest extends App {
+val d = new D
+d display
+}
+
+Here output is “From C.display” form trait C. Scala Compiler reads “extends B with C” from right to left and
+takes “display” method de􀃚nition from lest most trait that is C.
+
+What is guard in Scala’s for-comprehension construct?
+on to flter some elements and generate new collection. This if clause is also known as “Guard”.
+for(l <- list if l % 2 =0 ) yield l
+
+
+What is Option in Scala? What are Some and None? What is Option/Some/None Design Pattern in Scala?
+In Scala, Option is used to represent optional values that is either exist or not exist.
+Option is an abstract class. Option has two subclasses: Some and None. All three 
+(Option, Some and None)
+are de􀃚ned in “scala” package like “scala.Option”.
+Option is a bounded collection in Scala, which contains either zero or one element. 
+If Option contains zero
+elements that is None. If Option contains one element, that is Some.
+
+def get(val index: Int): Option[String]
+
+What is Either in Scala? What are Left and Right in Scala? Explain
+Either/Left/Right Design Pattern in Scala?
+Scala, Either is an abstract class.
+If Either[A,B] represents an instance A that means it is Left. If it
+represents an instance B that means it is Right.
+
+Right. If Either[A,B] represents an instance A that means it is Left. If it
+represents an instance B that means it is Right.
+
+What are the dierences between Case class and Normal Class?
+
+By default, Case-class constructor parameters are ‘val’. We don’t need to declare parameters with 
+‘val’.
+By default, Case-class constructor parameters become class elds.
+These methods are added automatically: toString, equals, hashCode, copy. apply and unapply.
+It automatically gets Companion object.
+No need to use ‘new’ keyword to create instance of Case Class.
+Easy to use in Pattern Matching.
+
+
+
+Scala supports both call-by-value and call-by-name function parameters. However, 
+Java supports only callby-value, but not call-by-name.
+Difference between call-by-value and call-by-name:
+The major di􀃙erence between these two are described below:
+In Call-by-name, the function parameters are evaluated only whenever they are needed but not when
+the function is called.
+In Call-by-value, the function parameters are evaluated when the function is called.
+In Call-by-value, the parameters are evaluated before executing function and they are evaluated only
+once irrespective of how many times we used them in that function.
+In Call-by-name, the parameters are evaluated whenever we access them and they are evaluated
+each time we use them in that function.
+
+Call-by-value:
+def myFunction(a: Int, b: Int) { }
+Here both a and b are Call-by-value parameters to myFunction.
+Call-by-name:
+def myFunction(a: Int, b: => Int) { }
+Here both a is a Call-by-value parameter and b is Call-by-name to myFunction.
+
+Explain the main di􀃙erence between List and Stream?
+That is List elements
+are evaluated Eagerly and Stream elements are evaluated Lazily that means when we access them.
+scala> var list1 = List(1,2,3,4)
+list1: List[Int] = List(1, 2, 3, 4)
+scala> var s1 = Stream(1,2,3,4)
+s1: scala.collection.immutable.Stream[Int] = Stream(1, ?)
+
+
+What is the difference between :: and #:: in Scala?
+
+In List class, :: method is used to append an element.
+
+scala> var list1 = List(1,2,3,4)
+list1: List[Int] = List(1, 2, 3, 4)
+scala> list1 = 0 :: list1
+list1: List[Int] = List(0, 1, 2, 3, 4)
+
+In List class, ::: method is used to concatenate the elements of a given list in front of this list.
+scala> var list1 = List(3,4,5)
+list1: List[Int] = List(3, 4, 5)
+scala> val list2 = List(1,2) ::: list1
+list2: List[Int] = List(1, 2, 0, 1, 2, 3, 4)
+
+1-1.04 0.0016 
+2-2.04 0.0016
+2.64-2.70  0.0036
+3.16-3.22  0.0036
+3.60-3.67  0.0049
+4-4.07  0.0049
+4.35-4.44 0.0081
+4.69-4.77 0.0064
+5.00-4.88 0.0144
+
+
+Currying transforms a function that takes multiple parameters into a chain of functions, each taking a single parameter. Curried functions are defined with multiple parameter lists,
+
+def strcat(s1: String)(s2: String) = s1 + s2
+
+def strcat(s1: String) = (s2: String) => s1 + s2
+
+strcat("foo")("bar")
+
+object Demo {
+   def main(args: Array[String]) {
+      val str1:String = "Hello, "
+      val str2:String = "Scala!"
+      
+      println( "str1 + str2 = " +  strcat(str1)(str2) )
+   }
+
+   def strcat(s1: String)(s2: String) = {
+      s1 + s2
+   }
+}
+
+Real Example1:
+First the prime example for partial application that is found all around the net:
+
+def add(a: Int)(b: Int) = a + b
+
+val onePlusFive = add(1)(5) // 6
+
+val addFour = add(4)_ // (Int => Int)
+
+val twoPlusFour = addFour(2) // 6
+
+assert(onePlusFive == twoPlusFour) // true
+
+Real Example2:
+
+object CreditCard {
+    def getPremium(totalCards: Int)(creditCard: CreditCard): Double = { ... }
+}
+
+val creditCards: List[CreditCard] = getCreditCards()
+
+val getPremiumWithTotal = CreditCard.getPremium(creditCards.length)_
+
+val allPremiums = creditCards.map(getPremiumWithTotal).sum
+
+
+By default, three packages are implicitly imported for you:
+
+java.lang._
+scala._
+scala.Predef._
+
+Basic import usage
+
+// import one class
+import java.io.File
+
+// import every class in a package
+import java.io._
+
+import java.lang.Math._
+
+
+How to sort a sequence (Seq, List, Array, Vector) in Scala
+By Alvin Alexander. Last updated: August 14 2018
+Scala FAQ: How do I sort a sequential collection in Scala? (Or, how do I implement the Ordered trait in a custom class so I can use the sorted method (or operators like <, <=, >, and >=) to compare instances of my class?
+
+Solution
+Before looking at how to sort other sequence types in Scala, it’s important to note that the preferred way to sort an Array is different than sorting the other sequential collections. If you want to sort an Array, see my other FAQ on How to sort an Array in Scala.
+
+Now, if you want to sort a Scala sequence like a List, Vector, ArrayBuffer, Seq, and others, this article shows how to sort those with the sorted and sortWith methods (and the Ordered and Ordering traits).
+
+The sorted method can sort collections with type Double, Float, Int, and any other type that has an implicit scala.math.Ordering:
+
+scala> val a = List(10, 5, 8, 1, 7).sorted
+a: List[Int] = List(1, 5, 7, 8, 10)
+
+scala> val b = List("banana", "pear", "apple", "orange").sorted
+b: List[String] = List(apple, banana, orange, pear)
+The “rich” versions of the numeric classes (like RichInt) and the StringOps class all extend the Ordered trait, so they can be used with the sorted method. (I discuss the Ordered trait more down below in the Discussion.)
+
+The sortWith method lets you provide your own sorting function. The following examples demonstrate how to sort a collection of Int or String in both directions:
+
+scala> List(10, 5, 8, 1, 7).sortWith(_ < _)
+res1: List[Int] = List(1, 5, 7, 8, 10)
+
+scala> List(10, 5, 8, 1, 7).sortWith(_ > _)
+res2: List[Int] = List(10, 8, 7, 5, 1)
+
+scala> List("banana", "pear", "apple", "orange").sortWith(_ < _)
+res3: List[java.lang.String] = List(apple, banana, orange, pear)
+
+scala> List("banana", "pear", "apple", "orange").sortWith(_ > _)
+res4: List[java.lang.String] = List(pear, orange, banana, apple)
+Your sorting function can be as complicated as it needs to be. For example, you can access methods on the object elements during the sort, such as the following example, which sorts a list of strings by the string length:
+
+scala> List("banana", "pear", "apple", "orange").sortWith(_.length < _.length)
+res5: List[java.lang.String] = List(pear, apple, banana, orange)
+
+scala> List("banana", "pear", "apple", "orange").sortWith(_.length > _.length)
+res6: List[java.lang.String] = List(banana, orange, apple, pear)
+In the same way the length method is called on a String, you can call a method on any class you want to sort. If your sorting method gets longer, first declare it as a method:
+
+def sortByLength(s1: String, s2: String) = {
+    println("comparing %s and %s".format(s1, s2))
+    s1.length > s2.length
+}
+Then use it by passing it into the sortWith method:
+
+scala> List("banana", "pear", "apple").sortWith(sortByLength)
+comparing banana and pear
+comparing pear and apple
+comparing apple and pear
+    comparing banana and apple
+    res0: List[String] = List(banana, apple, pear)
+Discussion
+If the type a sequence is holding doesn’t have an implicit Ordering, you won’t be able to sort it with sorted. To demonstrate this, first create a very basic class:
+
+class Person (var name: String) {
+    override def toString = name
+}
+then create a List[Person]:
+
+val ty = new Person("Tyler")
+val al = new Person("Al")
+val paul = new Person("Paul")
+val dudes = List(ty, al, paul)
+If you try to sort this list in the REPL, you’ll see an error stating that the Person class doesn’t have an implicit Ordering:
+
+scala> dudes.sorted
+<console>:13: error: No implicit Ordering defined for Person.
+                  dudes.sorted
+                        ^
+This means that you can’t use sorted with the Person class as it’s written, but you can write a simple anonymous function to sort the Person elements by the name field using sortWith:
+
+scala> val sortedDudes = dudes.sortWith(_.name < _.name)
+sortedDudes: Array[Person] = Array(Al, Paul, Tyler)
+
+scala> val sortedDudes = dudes.sortWith(_.name > _.name)
+sortedDudes: Array[Person] = Array(Tyler, Paul, Al)
+Mix in the Ordered trait
+If you’d rather use the Person class with the sorted method, just mix the Ordered trait into the Person class, and implement a compare method. This technique is shown in the following code:
+
+class Person (var name: String) extends Ordered [Person] {
+
+    override def toString = name
+
+    // return 0 if the same; negative if this < that; positive if this > that
+    def compare (that: Person) = {
+        if (this.name == that.name)
+            0
+        else if (this.name > that.name)
+            1
+        else
+            −1
+    }
+
+}
+Now that the compare method provides the sorting capability, this new version of the Person class can be used with sorted. As shown in the comment, compare should work like this:
+
+Return 0 if the two objects are the same (i.e., they are “equal,” typically using the equals method of your class)
+Return a negative value if this is less than that
+Return a positive value if this is greater than that
+How you determine whether one instance is “greater” than another instance is entirely up to your compare algorithm.
+
+Note that because this compare algorithm only compares two String values, it could have been written like this:
+
+def compare (that: Person) = this.name.compare(that.name)
+However, I wrote it as shown in the first example to be clear about the approach.
+
+Hello, Scala
+Hello, ScalaScala for the Impatient (2nd Edition)
+2nd Edition
+An added benefit of mixing the Ordered trait into your class is that it also lets you compare object instances directly in your code:
+
+if (al > ty) println("Al") else println("Tyler")
+This works because the Ordered trait implements the <=, <, >, and >= methods, and calls your compare method to make those comparisons.
+
+Scala Higher Order Functions
+Higher order function is a function that either takes a function as argument or returns a function. In other words we can say a function which works with function is called higher order function.
+
+Higher order function allows you to create function composition, lambda function or anonymous function etc.
+
+Let's see an example.
+
+Scala Example: Passing a Function as Parameter in a Function
+object MainObject {  
+   def main(args: Array[String]) = {  
+     functionExample(25, multiplyBy2)                   // Passing a function as parameter  
+    }  
+    def functionExample(a:Int, f:Int=>AnyVal):Unit = {  
+        println(f(a))                                   // Calling that function   
+    }  
+    def multiplyBy2(a:Int):Int = {  
+        a*2  
+    }  
+}  
