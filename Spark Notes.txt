@@ -1,0 +1,1835 @@
+Resilient Distributed Dataset (RDD):
+
+At the core, an RDD is an immutable distributed collection of elements of your data, partitioned across nodes in your cluster that can be operated in parallel with a low-level API that offers transformations and actions.
+
+When to use RDDs?
+
+you want low-level transformation and actions and control on your dataset;
+your data is unstructured, such as media streams or streams of text;
+you want to manipulate your data with functional programming constructs than domain specific expressions;
+you don’t care about imposing a schema, such as columnar format, while processing or accessing data attributes by name or column; and
+you can forgo some optimization and performance benefits available with DataFrames and Datasets for structured and semi-structured data.
+
+DataFrames:
+
+DataFrame is an immutable distributed collection of data. Unlike an RDD, data is organized into named columns, like a table in a relational database. Designed to make large data sets processing even easier, DataFrame allows developers to impose a structure onto a distributed collection of data, allowing higher-level abstraction; it provides a domain specific language API to manipulate your distributed data;
+
+A DataFrame is a Dataset organized into named columns. It is conceptually equivalent to a table in a relational database or a data frame in R/Python, but with richer optimizations under the hood. DataFrames can be constructed from a wide array of sources such as: structured data files, tables in Hive, external databases, or existing RDDs. The DataFrame API is available in Scala, Java, Python, and R. In Scala and Java, a DataFrame is represented by a Dataset of Rows. In the Scala API, DataFrame is simply a type alias of Dataset[Row]. While, in Java API, users need to use Dataset<Row> to represent a DataFrame.
+
+Datasets:
+
+Dataset takes on two distinct APIs characteristics: a strongly-typed API and an untyped API, as shown in the table below. Conceptually, consider DataFrame as an alias for a collection of generic objects Dataset[Row], where a Row is a generic untyped JVM object. Dataset, by contrast, is a collection of strongly-typed JVM objects, dictated by a case class you define in Scala or a class in Java.
+
+A Dataset is a distributed collection of data. Dataset is a new interface added in Spark 1.6 that provides the benefits of RDDs (strong typing, ability to use powerful lambda functions) with the benefits of 
+Spark SQL’s optimized execution engine. A Dataset can be constructed from JVM objects and then manipulated using functional transformations (map, flatMap, filter, etc.). The Dataset API is available in Scala and Java. Python does not have the support for the Dataset API. But due to Python’s dynamic nature, many of the benefits of the Dataset API are already available (i.e. you can access the field of a row by name naturally row.columnName). The case for R is similar.
+
+Benefits of Dataset APIs
+
+1. Static-typing and runtime type-safety
+
+Spark SQL string queries, you won’t know a syntax error until runtime (which could be costly), whereas in DataFrames and Datasets you can catch errors at compile time (which saves developer-time and costs). That is, if you invoke a function in DataFrame that is not part of the API, the compiler will catch it. 
+
+Dataset APIs are all expressed as lambda functions and JVM typed objects, any mismatch of typed-parameters will be detected at compile time
+
+2. High-level abstraction and custom view into structured and semi-structured data
+
+DataFrames as a collection of Datasets[Row] render a structured custom view into your semi-structured data. For instance, let’s say, you have a huge IoT device event dataset, expressed as JSON. Since JSON is a semi-structured format, it lends itself well to employing Dataset as a collection of strongly typed-specific Dataset[DeviceIoTData].
+
+{"device_id": 198164, "device_name": "sensor-pad-198164owomcJZ", "ip": "80.55.20.25", "cca2": "PL", "cca3": "POL", "cn": "Poland", "latitude": 53.080000, "longitude": 18.620000, "scale": "Celsius", "temp": 21, "humidity": 65, "battery_level": 8, "c02_level": 1408, "lcd": "red", "timestamp" :1458081226051}"""
+
+You could express each JSON entry as DeviceIoTData, a custom object, with a Scala case class.
+
+case class DeviceIoTData (battery_level: Long, c02_level: Long, cca2: String, cca3: String, cn: String, device_id: Long, device_name: String, humidity: Long, ip: String, latitude: Double, lcd: String, longitude: Double, scale:String, temp: Long, timestamp: Long)
+
+// read the json file and create the dataset from the 
+// case class DeviceIoTData
+// ds is now a collection of JVM Scala objects DeviceIoTData
+val ds = spark.read.json(“/databricks-public-datasets/data/iot/iot_devices.json”).as[DeviceIoTData]
+
+hree things happen here under the hood in the code above:
+
+Spark reads the JSON, infers the schema, and creates a collection of DataFrames.
+At this point, Spark converts your data into DataFrame = Dataset[Row], a collection of generic Row object, since it does not know the exact type.
+Now, Spark converts the Dataset[Row] -> Dataset[DeviceIoTData] type-specific Scala JVM object, as dictated by the class DeviceIoTData.
+
+3. Ease-of-use of APIs with structure
+Dataset’s high-level APIs. For example, it’s much simpler to perform agg, select, sum, avg, map, filter, or groupBy
+
+// Use filter(), map(), groupBy() country, and compute avg() 
+// for temperatures and humidity. This operation results in 
+// another immutable Dataset. The query is simpler to read, 
+// and expressive
+
+val dsAvgTmp = ds.filter(d => {d.temp > 25}).map(d => (d.temp, d.humidity, d.cca3)).groupBy($"_3").avg()
+
+//display the resulting dataset
+display(dsAvgTmp)
+
+4. Performance and Optimization
+because DataFrame and Dataset APIs are built on top of the Spark SQL engine, it uses Catalyst to generate an optimized logical and physical query plan.
+
+Spark as a compiler understands your Dataset type JVM object using Encoders
+
+When should I use DataFrames or Datasets?
+
+If you want rich semantics, high-level abstractions, and domain specific APIs, use DataFrame or Dataset.
+If your processing demands high-level expressions, filters, maps, aggregation, averages, sum, SQL queries, columnar access and use of lambda functions on semi-structured data, use DataFrame or Dataset.
+If you want higher degree of type-safety at compile time, want typed JVM objects, take advantage of Catalyst optimization, and benefit from Tungsten’s efficient code generation, use Dataset.
+If you want unification and simplification of APIs across Spark Libraries, use DataFrame or Dataset.
+If you are a R user, use DataFrames.
+If you are a Python user, use DataFrames and resort back to RDDs if you need more control.
+
+Note that you can always seamlessly interoperate or convert from DataFrame and/or Dataset to an RDD, by simple method call .rdd. For instance,
+
+// select specific fields from the Dataset, apply a predicate
+// using the where() method, convert to an RDD, and show first 10
+// RDD rows
+val deviceEventsDS = ds.select($"device_name", $"cca3", $"c02_level").where($"c02_level" > 1300)
+// convert to RDDs and take the first 10 rows
+val eventsRDD = deviceEventsDS.rdd.take(10)
+
+Broadcast:
+
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession
+      .builder()
+      .appName("Broadcast Test")
+      .config("spark.broadcast.blockSize", blockSize)
+      .getOrCreate()
+
+val sc = spark.sparkContext
+
+val barr1 = sc.broadcast(arr1)
+
+val observedSizes = sc.parallelize(1 to 10, slices).map(_ => barr1.value.length)
+
+spark.stop()
+
+Accumulator:
+
+class DistributedStopwatch(sc: SparkContext, val name: String) {
+
+  val elapsedTime: Accumulator[Long] = sc.accumulator(0L, s"DistributedStopwatch($name)")
+
+  override def elapsed(): Long = elapsedTime.value
+
+  override protected def add(duration: Long): Unit = {
+    elapsedTime += duration
+  }
+}
+
+ 
+scala> val accum = sc.accumulator(0, "Accumulator Example")
+accum: spark.Accumulator[Int] = 0
+ 
+scala> sc.parallelize(Array(1, 2, 3)).foreach(x => accum += x)
+ 
+scala> accum.value
+res4: Int = 6
+
+Saprk Examples:
+
+DFSReadWriteTest:
+
+import java.io.File
+
+import scala.io.Source._
+
+localFilePath = new File(args(i))
+    if (!localFilePath.exists) {
+      System.err.println(s"Given path (${args(i)}) does not exist")
+      printUsage()
+      System.exit(1)
+    }
+
+    if (!localFilePath.isFile) {
+      System.err.println(s"Given path (${args(i)}) is not a file")
+      printUsage()
+      System.exit(1)
+    }
+
+private def readFile(filename: String): List[String] = {
+    val lineIter: Iterator[String] = fromFile(filename).getLines()
+    val lineList: List[String] = lineIter.toList
+    lineList
+  }
+
+  def runLocalWordCount(fileContents: List[String]): Int = {
+    fileContents.flatMap(_.split(" "))
+      .flatMap(_.split("\t"))
+      .filter(_.nonEmpty)
+      .groupBy(w => w)
+      .mapValues(_.size)
+      .values
+      .sum
+  }
+
+  println("Writing local file to DFS")
+    val dfsFilename = s"$dfsDirPath/dfs_read_write_test"
+    val fileRDD = spark.sparkContext.parallelize(fileContents)
+    fileRDD.saveAsTextFile(dfsFilename)
+
+    println("Reading file from DFS and running Word Count")
+    val readFileRDD = spark.sparkContext.textFile(dfsFilename)
+
+      val dfsWordCount = readFileRDD
+      .flatMap(_.split(" "))
+      .flatMap(_.split("\t"))
+      .filter(_.nonEmpty)
+      .map(w => (w, 1))
+      .countByKey()
+      .values
+      .sum
+
+    if (localWordCount == dfsWordCount) {
+      println(s"Success! Local Word Count $localWordCount and " +
+        s"DFS Word Count $dfsWordCount agree.")
+    } else {
+      println(s"Failure! Local Word Count $localWordCount " +
+        s"and DFS Word Count $dfsWordCount disagree.")
+    }  
+
+
+HdfsTest:
+
+val file = spark.read.text(args(0)).rdd
+
+LocalKMeans:
+
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.HashSet
+
+while (points.size < K) {
+      points.add(data(rand.nextInt(N)))
+    }
+
+    val iter = points.iterator
+    for (i <- 1 to points.size) {
+      kPoints.put(i, iter.next())
+    }
+
+
+SparkHiveExample:  
+
+import java.io.File
+
+import org.apache.spark.sql.{Row, SaveMode, SparkSession}
+// $example off:spark_hive$
+
+object SparkHiveExample {
+
+  // $example on:spark_hive$
+  case class Record(key: Int, value: String)
+  // $example off:spark_hive$
+
+  def main(args: Array[String]) {
+    // When working with Hive, one must instantiate `SparkSession` with Hive support, including
+    // connectivity to a persistent Hive metastore, support for Hive serdes, and Hive user-defined
+    // functions. Users who do not have an existing Hive deployment can still enable Hive support.
+    // When not configured by the hive-site.xml, the context automatically creates `metastore_db`
+    // in the current directory and creates a directory configured by `spark.sql.warehouse.dir`,
+    // which defaults to the directory `spark-warehouse` in the current directory that the spark
+    // application is started.
+
+    // $example on:spark_hive$
+    // warehouseLocation points to the default location for managed databases and tables
+    val warehouseLocation = new File("spark-warehouse").getAbsolutePath
+
+    val spark = SparkSession
+      .builder()
+      .appName("Spark Hive Example")
+      .config("spark.sql.warehouse.dir", warehouseLocation)
+      .enableHiveSupport() //Important
+      .getOrCreate()
+
+    import spark.implicits._
+    import spark.sql
+
+    sql("CREATE TABLE IF NOT EXISTS src (key INT, value STRING) USING hive")
+    sql("LOAD DATA LOCAL INPATH 'examples/src/main/resources/kv1.txt' INTO TABLE src")
+
+    // Queries are expressed in HiveQL
+    sql("SELECT * FROM src").show()
+    // +---+-------+
+    // |key|  value|
+    // +---+-------+
+    // |238|val_238|
+    // | 86| val_86|
+    // |311|val_311|
+    // ...
+
+    // Aggregation queries are also supported.
+    sql("SELECT COUNT(*) FROM src").show()
+    // +--------+
+    // |count(1)|
+    // +--------+
+    // |    500 |
+    // +--------+
+
+    // The results of SQL queries are themselves DataFrames and support all normal functions.
+    val sqlDF = sql("SELECT key, value FROM src WHERE key < 10 ORDER BY key")
+
+    // The items in DataFrames are of type Row, which allows you to access each column by ordinal.
+    val stringsDS = sqlDF.map {
+      case Row(key: Int, value: String) => s"Key: $key, Value: $value"
+    }
+    stringsDS.show()
+    // +--------------------+
+    // |               value|
+    // +--------------------+
+    // |Key: 0, Value: val_0|
+    // |Key: 0, Value: val_0|
+    // |Key: 0, Value: val_0|
+    // ...
+
+    // You can also use DataFrames to create temporary views within a SparkSession.
+    val recordsDF = spark.createDataFrame((1 to 100).map(i => Record(i, s"val_$i")))
+    recordsDF.createOrReplaceTempView("records")
+
+    // Queries can then join DataFrame data with data stored in Hive.
+    sql("SELECT * FROM records r JOIN src s ON r.key = s.key").show()
+    // +---+------+---+------+
+    // |key| value|key| value|
+    // +---+------+---+------+
+    // |  2| val_2|  2| val_2|
+    // |  4| val_4|  4| val_4|
+    // |  5| val_5|  5| val_5|
+    // ...
+
+    // Create a Hive managed Parquet table, with HQL syntax instead of the Spark SQL native syntax
+    // `USING hive`
+    sql("CREATE TABLE hive_records(key int, value string) STORED AS PARQUET")
+    // Save DataFrame to the Hive managed table
+    val df = spark.table("src")
+    df.write.mode(SaveMode.Overwrite).saveAsTable("hive_records")
+    // After insertion, the Hive managed table has data now
+    sql("SELECT * FROM hive_records").show()
+    // +---+-------+
+    // |key|  value|
+    // +---+-------+
+    // |238|val_238|
+    // | 86| val_86|
+    // |311|val_311|
+    // ...
+
+    // Prepare a Parquet data directory
+    val dataDir = "/tmp/parquet_data"
+    spark.range(10).write.parquet(dataDir)
+    // Create a Hive external Parquet table
+    sql(s"CREATE EXTERNAL TABLE hive_ints(key int) STORED AS PARQUET LOCATION '$dataDir'")
+    // The Hive external table should already have data
+    sql("SELECT * FROM hive_ints").show()
+    // +---+
+    // |key|
+    // +---+
+    // |  0|
+    // |  1|
+    // |  2|
+    // ...
+
+    // Turn on flag for Hive Dynamic Partitioning
+    spark.sqlContext.setConf("hive.exec.dynamic.partition", "true")
+    spark.sqlContext.setConf("hive.exec.dynamic.partition.mode", "nonstrict")
+    // Create a Hive partitioned table using DataFrame API
+    df.write.partitionBy("key").format("hive").saveAsTable("hive_part_tbl")
+    // Partitioned column `key` will be moved to the end of the schema.
+    sql("SELECT * FROM hive_part_tbl").show()
+    // +-------+---+
+    // |  value|key|
+    // +-------+---+
+    // |val_238|238|
+    // | val_86| 86|
+    // |val_311|311|
+    // ...
+
+    spark.stop()
+    // $example off:spark_hive$
+  }
+}
+
+
+RDDRelation:
+
+// One method for defining the schema of an RDD is to make a case class with the desired column
+// names and types.
+case class Record(key: Int, value: String)
+
+package org.apache.spark.examples.sql
+
+import org.apache.spark.sql.SaveMode
+// $example on:init_session$
+import org.apache.spark.sql.SparkSession
+// $example off:init_session$
+
+// One method for defining the schema of an RDD is to make a case class with the desired column
+// names and types.
+case class Record(key: Int, value: String)
+
+object RDDRelation {
+  def main(args: Array[String]) {
+    // $example on:init_session$
+    val spark = SparkSession
+      .builder
+      .appName("Spark Examples")
+      .config("spark.some.config.option", "some-value")
+      .getOrCreate()
+
+    // Importing the SparkSession gives access to all the SQL functions and implicit conversions.
+    import spark.implicits._
+    // $example off:init_session$
+
+    val df = spark.createDataFrame((1 to 100).map(i => Record(i, s"val_$i")))
+    // Any RDD containing case classes can be used to create a temporary view.  The schema of the
+    // view is automatically inferred using scala reflection.
+    df.createOrReplaceTempView("records")
+
+    // Once tables have been registered, you can run SQL queries over them.
+    println("Result of SELECT *:")
+    spark.sql("SELECT * FROM records").collect().foreach(println)
+
+    // Aggregation queries are also supported.
+    val count = spark.sql("SELECT COUNT(*) FROM records").collect().head.getLong(0)
+    println(s"COUNT(*): $count")
+
+    // The results of SQL queries are themselves RDDs and support all normal RDD functions. The
+    // items in the RDD are of type Row, which allows you to access each column by ordinal.
+    val rddFromSql = spark.sql("SELECT key, value FROM records WHERE key < 10")
+
+    println("Result of RDD.map:")
+    rddFromSql.rdd.map(row => s"Key: ${row(0)}, Value: ${row(1)}").collect().foreach(println)
+
+    // Queries can also be written using a LINQ-like Scala DSL.
+    df.where($"key" === 1).orderBy($"value".asc).select($"key").collect().foreach(println)
+
+    // Write out an RDD as a parquet file with overwrite mode.
+    df.write.mode(SaveMode.Overwrite).parquet("pair.parquet")
+
+    // Read in parquet file.  Parquet files are self-describing so the schema is preserved.
+    val parquetFile = spark.read.parquet("pair.parquet")
+
+    // Queries can be run using the DSL on parquet files just like the original RDD.
+    parquetFile.where($"key" === 1).select($"value".as("a")).collect().foreach(println)
+
+    // These files can also be used to create a temporary view.
+    parquetFile.createOrReplaceTempView("parquetFile")
+    spark.sql("SELECT * FROM parquetFile").collect().foreach(println)
+
+    spark.stop()
+  }
+}
+// scalastyle:on println
+
+
+SparkSQLExample:
+
+// $example on:programmatic_schema$
+import org.apache.spark.sql.Row
+// $example off:programmatic_schema$
+// $example on:init_session$
+import org.apache.spark.sql.SparkSession
+// $example off:init_session$
+// $example on:programmatic_schema$
+// $example on:data_types$
+import org.apache.spark.sql.types._
+// $example off:data_types$
+// $example off:programmatic_schema$
+
+object SparkSQLExample {
+
+  // $example on:create_ds$
+  case class Person(name: String, age: Long)
+  // $example off:create_ds$
+
+  def main(args: Array[String]) {
+    // $example on:init_session$
+    val spark = SparkSession
+      .builder()
+      .appName("Spark SQL basic example")
+      .config("spark.some.config.option", "some-value")
+      .getOrCreate()
+
+    // For implicit conversions like converting RDDs to DataFrames
+    import spark.implicits._
+    // $example off:init_session$
+
+    runBasicDataFrameExample(spark)
+    runDatasetCreationExample(spark)
+    runInferSchemaExample(spark)
+    runProgrammaticSchemaExample(spark)
+
+    spark.stop()
+  }
+
+  private def runBasicDataFrameExample(spark: SparkSession): Unit = {
+    // $example on:create_df$
+    val df = spark.read.json("examples/src/main/resources/people.json")
+
+    // Displays the content of the DataFrame to stdout
+    df.show()
+    // +----+-------+
+    // | age|   name|
+    // +----+-------+
+    // |null|Michael|
+    // |  30|   Andy|
+    // |  19| Justin|
+    // +----+-------+
+    // $example off:create_df$
+
+    // $example on:untyped_ops$
+    // This import is needed to use the $-notation
+    import spark.implicits._
+    // Print the schema in a tree format
+    df.printSchema()
+    // root
+    // |-- age: long (nullable = true)
+    // |-- name: string (nullable = true)
+
+    // Select only the "name" column
+    df.select("name").show()
+    // +-------+
+    // |   name|
+    // +-------+
+    // |Michael|
+    // |   Andy|
+    // | Justin|
+    // +-------+
+
+    // Select everybody, but increment the age by 1
+    df.select($"name", $"age" + 1).show()
+    // +-------+---------+
+    // |   name|(age + 1)|
+    // +-------+---------+
+    // |Michael|     null|
+    // |   Andy|       31|
+    // | Justin|       20|
+    // +-------+---------+
+
+    // Select people older than 21
+    df.filter($"age" > 21).show()
+    // +---+----+
+    // |age|name|
+    // +---+----+
+    // | 30|Andy|
+    // +---+----+
+
+    // Count people by age
+    df.groupBy("age").count().show()
+    // +----+-----+
+    // | age|count|
+    // +----+-----+
+    // |  19|    1|
+    // |null|    1|
+    // |  30|    1|
+    // +----+-----+
+    // $example off:untyped_ops$
+
+    // $example on:run_sql$
+    // Register the DataFrame as a SQL temporary view
+    df.createOrReplaceTempView("people")
+
+    val sqlDF = spark.sql("SELECT * FROM people")
+    sqlDF.show()
+    // +----+-------+
+    // | age|   name|
+    // +----+-------+
+    // |null|Michael|
+    // |  30|   Andy|
+    // |  19| Justin|
+    // +----+-------+
+    // $example off:run_sql$
+
+    // $example on:global_temp_view$
+    // Register the DataFrame as a global temporary view
+    df.createGlobalTempView("people")
+
+    // Global temporary view is tied to a system preserved database `global_temp`
+    spark.sql("SELECT * FROM global_temp.people").show()
+    // +----+-------+
+    // | age|   name|
+    // +----+-------+
+    // |null|Michael|
+    // |  30|   Andy|
+    // |  19| Justin|
+    // +----+-------+
+
+    // Global temporary view is cross-session
+    spark.newSession().sql("SELECT * FROM global_temp.people").show()
+    // +----+-------+
+    // | age|   name|
+    // +----+-------+
+    // |null|Michael|
+    // |  30|   Andy|
+    // |  19| Justin|
+    // +----+-------+
+    // $example off:global_temp_view$
+  }
+
+  private def runDatasetCreationExample(spark: SparkSession): Unit = {
+    import spark.implicits._
+    // $example on:create_ds$
+    // Encoders are created for case classes
+    val caseClassDS = Seq(Person("Andy", 32)).toDS()
+    caseClassDS.show()
+    // +----+---+
+    // |name|age|
+    // +----+---+
+    // |Andy| 32|
+    // +----+---+
+
+    // Encoders for most common types are automatically provided by importing spark.implicits._
+    val primitiveDS = Seq(1, 2, 3).toDS()
+    primitiveDS.map(_ + 1).collect() // Returns: Array(2, 3, 4)
+
+    // DataFrames can be converted to a Dataset by providing a class. Mapping will be done by name
+    val path = "examples/src/main/resources/people.json"
+    val peopleDS = spark.read.json(path).as[Person]
+    peopleDS.show()
+    // +----+-------+
+    // | age|   name|
+    // +----+-------+
+    // |null|Michael|
+    // |  30|   Andy|
+    // |  19| Justin|
+    // +----+-------+
+    // $example off:create_ds$
+  }
+
+  private def runInferSchemaExample(spark: SparkSession): Unit = {
+    // $example on:schema_inferring$
+    // For implicit conversions from RDDs to DataFrames
+    import spark.implicits._
+
+    // Create an RDD of Person objects from a text file, convert it to a Dataframe
+    val peopleDF = spark.sparkContext
+      .textFile("examples/src/main/resources/people.txt")
+      .map(_.split(","))
+      .map(attributes => Person(attributes(0), attributes(1).trim.toInt))
+      .toDF()
+    // Register the DataFrame as a temporary view
+    peopleDF.createOrReplaceTempView("people")
+
+    // SQL statements can be run by using the sql methods provided by Spark
+    val teenagersDF = spark.sql("SELECT name, age FROM people WHERE age BETWEEN 13 AND 19")
+
+    // The columns of a row in the result can be accessed by field index
+    teenagersDF.map(teenager => "Name: " + teenager(0)).show()
+    // +------------+
+    // |       value|
+    // +------------+
+    // |Name: Justin|
+    // +------------+
+
+    // or by field name
+    teenagersDF.map(teenager => "Name: " + teenager.getAs[String]("name")).show()
+    // +------------+
+    // |       value|
+    // +------------+
+    // |Name: Justin|
+    // +------------+
+
+    // No pre-defined encoders for Dataset[Map[K,V]], define explicitly
+    implicit val mapEncoder = org.apache.spark.sql.Encoders.kryo[Map[String, Any]]
+    // Primitive types and case classes can be also defined as
+    // implicit val stringIntMapEncoder: Encoder[Map[String, Any]] = ExpressionEncoder()
+
+    // row.getValuesMap[T] retrieves multiple columns at once into a Map[String, T]
+    teenagersDF.map(teenager => teenager.getValuesMap[Any](List("name", "age"))).collect()
+    // Array(Map("name" -> "Justin", "age" -> 19))
+    // $example off:schema_inferring$
+  }
+
+  private def runProgrammaticSchemaExample(spark: SparkSession): Unit = {
+    import spark.implicits._
+    // $example on:programmatic_schema$
+    // Create an RDD
+    val peopleRDD = spark.sparkContext.textFile("examples/src/main/resources/people.txt")
+
+    // The schema is encoded in a string
+    val schemaString = "name age"
+
+    // Generate the schema based on the string of schema
+    val fields = schemaString.split(" ")
+      .map(fieldName => StructField(fieldName, StringType, nullable = true))
+    val schema = StructType(fields)
+
+    // Convert records of the RDD (people) to Rows
+    val rowRDD = peopleRDD
+      .map(_.split(","))
+      .map(attributes => Row(attributes(0), attributes(1).trim))
+
+    // Apply the schema to the RDD
+    val peopleDF = spark.createDataFrame(rowRDD, schema)
+
+    // Creates a temporary view using the DataFrame
+    peopleDF.createOrReplaceTempView("people")
+
+    // SQL can be run over a temporary view created using DataFrames
+    val results = spark.sql("SELECT name FROM people")
+
+    // The results of SQL queries are DataFrames and support all the normal RDD operations
+    // The columns of a row in the result can be accessed by field index or by field name
+    results.map(attributes => "Name: " + attributes(0)).show()
+    // +-------------+
+    // |        value|
+    // +-------------+
+    // |Name: Michael|
+    // |   Name: Andy|
+    // | Name: Justin|
+    // +-------------+
+    // $example off:programmatic_schema$
+  }
+}
+
+
+SQLDataSourceExample:
+
+import java.util.Properties
+
+import org.apache.spark.sql.SparkSession
+
+object SQLDataSourceExample {
+
+  case class Person(name: String, age: Long)
+
+  def main(args: Array[String]) {
+    val spark = SparkSession
+      .builder()
+      .appName("Spark SQL data sources example")
+      .config("spark.some.config.option", "some-value")
+      .getOrCreate()
+
+    runBasicDataSourceExample(spark)
+    runBasicParquetExample(spark)
+    runParquetSchemaMergingExample(spark)
+    runJsonDatasetExample(spark)
+    runJdbcDatasetExample(spark)
+
+    spark.stop()
+  }
+
+  private def runBasicDataSourceExample(spark: SparkSession): Unit = {
+    // $example on:generic_load_save_functions$
+    val usersDF = spark.read.load("examples/src/main/resources/users.parquet")
+    usersDF.select("name", "favorite_color").write.save("namesAndFavColors.parquet")
+    // $example off:generic_load_save_functions$
+    // $example on:manual_load_options$
+    val peopleDF = spark.read.format("json").load("examples/src/main/resources/people.json")
+    peopleDF.select("name", "age").write.format("parquet").save("namesAndAges.parquet")
+    // $example off:manual_load_options$
+    // $example on:manual_load_options_csv$
+    val peopleDFCsv = spark.read.format("csv")
+      .option("sep", ";")
+      .option("inferSchema", "true")
+      .option("header", "true")
+      .load("examples/src/main/resources/people.csv")
+    // $example off:manual_load_options_csv$
+    // $example on:manual_save_options_orc$
+
+    //Spark’s ORC data source supports complex data types (i.e., array, map, and struct), and provides read and write access to ORC files.
+    usersDF.write.format("orc")
+      .option("orc.bloom.filter.columns", "favorite_color")
+      .option("orc.dictionary.key.threshold", "1.0")
+      .option("orc.column.encoding.direct", "name")
+      .save("users_with_options.orc")
+    // $example off:manual_save_options_orc$
+
+    // $example on:direct_sql$
+    val sqlDF = spark.sql("SELECT * FROM parquet.`examples/src/main/resources/users.parquet`")
+    // $example off:direct_sql$
+    // $example on:write_sorting_and_bucketing$
+    peopleDF.write.bucketBy(42, "name").sortBy("age").saveAsTable("people_bucketed")
+    // $example off:write_sorting_and_bucketing$
+    // $example on:write_partitioning$
+    usersDF.write.partitionBy("favorite_color").format("parquet").save("namesPartByColor.parquet")
+    // $example off:write_partitioning$
+    // $example on:write_partition_and_bucket$
+    usersDF
+      .write
+      .partitionBy("favorite_color")
+      .bucketBy(42, "name")
+      .saveAsTable("users_partitioned_bucketed")
+    // $example off:write_partition_and_bucket$
+
+    spark.sql("DROP TABLE IF EXISTS people_bucketed")
+    spark.sql("DROP TABLE IF EXISTS users_partitioned_bucketed")
+  }
+
+  private def runBasicParquetExample(spark: SparkSession): Unit = {
+    // $example on:basic_parquet_example$
+    // Encoders for most common types are automatically provided by importing spark.implicits._
+    import spark.implicits._
+
+    val peopleDF = spark.read.json("examples/src/main/resources/people.json")
+
+    // DataFrames can be saved as Parquet files, maintaining the schema information
+    peopleDF.write.parquet("people.parquet")
+
+    // Read in the parquet file created above
+    // Parquet files are self-describing so the schema is preserved
+    // The result of loading a Parquet file is also a DataFrame
+    val parquetFileDF = spark.read.parquet("people.parquet")
+
+    // Parquet files can also be used to create a temporary view and then used in SQL statements
+    parquetFileDF.createOrReplaceTempView("parquetFile")
+    val namesDF = spark.sql("SELECT name FROM parquetFile WHERE age BETWEEN 13 AND 19")
+    namesDF.map(attributes => "Name: " + attributes(0)).show()
+    // +------------+
+    // |       value|
+    // +------------+
+    // |Name: Justin|
+    // +------------+
+    // $example off:basic_parquet_example$
+  }
+
+  private def runParquetSchemaMergingExample(spark: SparkSession): Unit = {
+    // $example on:schema_merging$
+    // This is used to implicitly convert an RDD to a DataFrame.
+    import spark.implicits._
+
+    // Create a simple DataFrame, store into a partition directory
+    val squaresDF = spark.sparkContext.makeRDD(1 to 5).map(i => (i, i * i)).toDF("value", "square")
+    squaresDF.write.parquet("data/test_table/key=1")
+
+    // Create another DataFrame in a new partition directory,
+    // adding a new column and dropping an existing column
+    val cubesDF = spark.sparkContext.makeRDD(6 to 10).map(i => (i, i * i * i)).toDF("value", "cube")
+    cubesDF.write.parquet("data/test_table/key=2")
+
+    // Read the partitioned table
+    val mergedDF = spark.read.option("mergeSchema", "true").parquet("data/test_table")
+    mergedDF.printSchema()
+
+    // The final schema consists of all 3 columns in the Parquet files together
+    // with the partitioning column appeared in the partition directory paths
+    // root
+    //  |-- value: int (nullable = true)
+    //  |-- square: int (nullable = true)
+    //  |-- cube: int (nullable = true)
+    //  |-- key: int (nullable = true)
+    // $example off:schema_merging$
+  }
+
+  private def runJsonDatasetExample(spark: SparkSession): Unit = {
+    // $example on:json_dataset$
+    // Primitive types (Int, String, etc) and Product types (case classes) encoders are
+    // supported by importing this when creating a Dataset.
+    import spark.implicits._
+
+    // A JSON dataset is pointed to by path.
+    // The path can be either a single text file or a directory storing text files
+    val path = "examples/src/main/resources/people.json"
+    val peopleDF = spark.read.json(path)
+
+    // The inferred schema can be visualized using the printSchema() method
+    peopleDF.printSchema()
+    // root
+    //  |-- age: long (nullable = true)
+    //  |-- name: string (nullable = true)
+
+    // Creates a temporary view using the DataFrame
+    peopleDF.createOrReplaceTempView("people")
+
+    // SQL statements can be run by using the sql methods provided by spark
+    val teenagerNamesDF = spark.sql("SELECT name FROM people WHERE age BETWEEN 13 AND 19")
+    teenagerNamesDF.show()
+    // +------+
+    // |  name|
+    // +------+
+    // |Justin|
+    // +------+
+
+    // Alternatively, a DataFrame can be created for a JSON dataset represented by
+    // a Dataset[String] storing one JSON object per string
+    val otherPeopleDataset = spark.createDataset(
+      """{"name":"Yin","address":{"city":"Columbus","state":"Ohio"}}""" :: Nil)
+    val otherPeople = spark.read.json(otherPeopleDataset)
+    otherPeople.show()
+    // +---------------+----+
+    // |        address|name|
+    // +---------------+----+
+    // |[Columbus,Ohio]| Yin|
+    // +---------------+----+
+    // $example off:json_dataset$
+  }
+
+  private def runJdbcDatasetExample(spark: SparkSession): Unit = {
+    // $example on:jdbc_dataset$
+    // Note: JDBC loading and saving can be achieved via either the load/save or jdbc methods
+    // Loading data from a JDBC source
+    val jdbcDF = spark.read
+      .format("jdbc")
+      .option("url", "jdbc:postgresql:dbserver")
+      .option("dbtable", "schema.tablename")
+      .option("user", "username")
+      .option("password", "password")
+      .load()
+
+    val connectionProperties = new Properties()
+    connectionProperties.put("user", "username")
+    connectionProperties.put("password", "password")
+    val jdbcDF2 = spark.read
+      .jdbc("jdbc:postgresql:dbserver", "schema.tablename", connectionProperties)
+    // Specifying the custom data types of the read schema
+    connectionProperties.put("customSchema", "id DECIMAL(38, 0), name STRING")
+    val jdbcDF3 = spark.read
+      .jdbc("jdbc:postgresql:dbserver", "schema.tablename", connectionProperties)
+
+    // Saving data to a JDBC source
+    jdbcDF.write
+      .format("jdbc")
+      .option("url", "jdbc:postgresql:dbserver")
+      .option("dbtable", "schema.tablename")
+      .option("user", "username")
+      .option("password", "password")
+      .save()
+
+    jdbcDF2.write
+      .jdbc("jdbc:postgresql:dbserver", "schema.tablename", connectionProperties)
+
+    // Specifying create table column data types on write
+    jdbcDF.write
+      .option("createTableColumnTypes", "name CHAR(64), comments VARCHAR(1024)")
+      .jdbc("jdbc:postgresql:dbserver", "schema.tablename", connectionProperties)
+    // $example off:jdbc_dataset$
+  }
+}
+
+Writing a Custom UDF in Spark:
+
+def parse = (s: String) => {
+val format = new java.text.SimpleDateFormat("MM/dd/yyyy")
+var days =Array("Sun","Mon","Tue","Wed","Thu","Fri","Sat")
+val split = days(format.parse(s).getDay).toString
+split
+}
+
+
+sqlContext.udf.register("parsed",parse)
+
+sqlContext.udf.register(“alias_name_of_function”,function_name)
+
+val test = sqlContext.sql("select dispatching_base_number as dis, parsed(date) as dt ,sum(trips) as cnt from uber group by dispatching_base_number,parsed(date) order by cnt desc")
+
+File Type:
+
+ORC:
+
+ORC, or Optimized Row Columnar, is a file format that provides a highly efficient way to store Hive data on Hadoop. It became a top-level project for Apache last year, and was designed to overcome limitations of the other Hive file formats. Using ORC files improves performance when Hive is reading, writing, and processing data in HDFS. In terms of raw speed, it can be up to 3x as fast as raw text. It claims to be the smallest columnar storage format available for Hadoop — and after roughly 8 months of experimenting with it in a number of pipelines and situations, that claim might very well be true.
+
+Column oriented storage format.
+Originally it is Hive's Row Columnar file. Now improved as Optimized RC (ORC)
+Schema is with the data, but as a part of footer.
+Data is stored as row groups and stripes.
+Each stripe maintains indexes and stats about data it stores.
+
+Parquet:
+
+Parquet might be better if you have highly nested data, because it stores its elements as a tree.
+
+Similar to ORC. Based on google dremel
+Schema stored in footer
+Column oriented storage format
+Has integrated compression and indexes
+Space or compression wise I found them pretty close to each other
+
+Apache ORC might be better if your file-structure is flattened.
+
+And as far as I know parquet does not support Indexes yet. ORC comes with a light weight Index and since Hive 0.14 an additional Bloom Filter which might be helpful the better query response time especially when it comes to sum operations.
+
+The Parquet default compression is SNAPPY. Are Table A - B - C and D holding the same Dataset? If yes it looks like there is something shady about it, when it only compresses to 1.9 GB
+
+AVRO:-
+
+It is row major format.
+Its primary design goal was schema evolution.
+In the avro format, we store schema separately from data. Generally avro schema file (.avsc) is maintained.
+
+
+Spark RDD default number of partitions:
+
+https://stackoverflow.com/questions/44222307/spark-rdd-default-number-of-partitions
+
+spark.default.parallelism is the number of cores in my laptop (which is 2 core processor).
+
+The minimum number of partition is actually a lower bound set by the SparkContext. Since spark uses hadoop under the hood, Hadoop InputFormat` will still be the behaviour by default.
+
+The first case should reflect defaultParallelism as mentioned here which may differ, depending on settings and hardware. (Numbers of cores, etc)
+
+So unless you provide the number of slices, that first case would be defined by the number described with sc.defaultParallelism:
+
+scala> sc.defaultParallelism
+res0: Int = 6
+
+scala> sc.parallelize(1 to 100).partitions.size
+res1: Int = 6
+As for the second case, with sc.textFile, the number of slices by default is the minimum number of partition.
+
+Which is equal to 2 as you can see in this section of code.
+
+Thus, you should consider the following :
+
+sc.parallelize will take numSlices or defaultParallelism.
+
+sc.textFile will take the maximum between minPartitions and the number of splits computed based on hadoop input split size divided by the block size.
+
+sc.textFile calls sc.hadoopFile, which creates a HadoopRDD that uses InputFormat.getSplits under the hood [Ref. InputFormat documentation].
+
+InputSplit[] getSplits(JobConf job, int numSplits) throws IOException : Logically split the set of input files for the job. Each InputSplit is then assigned to an individual Mapper for processing. Note: The split is a logical split of the inputs and the input files are not physically split into chunks. For e.g. a split could be tuple. Parameters: job - job configuration. numSplits - the desired number of splits, a hint. Returns: an array of InputSplits for the job. Throws: IOException.
+
+Example:
+
+Let's create some dummy text files :
+
+fallocate -l 241m bigfile.txt
+fallocate -l 4G hugefile.txt
+This will create 2 files, respectively of size 241MB and 4GB.
+
+We can see what happens when we read each of the files:
+
+scala> val rdd = sc.textFile("bigfile.txt")
+// rdd: org.apache.spark.rdd.RDD[String] = bigfile.txt MapPartitionsRDD[1] at textFile at <console>:27
+
+scala> rdd.getNumPartitions
+// res0: Int = 8
+
+scala> val rdd2 = sc.textFile("hugefile.txt")
+// rdd2: org.apache.spark.rdd.RDD[String] = hugefile.txt MapPartitionsRDD[3] at textFile at <console>:27
+
+scala> rdd2.getNumPartitions
+// res1: Int = 128
+Both of them are actually HadoopRDDs :
+
+scala> rdd.toDebugString
+// res2: String = 
+// (8) bigfile.txt MapPartitionsRDD[1] at textFile at <console>:27 []
+//  |  bigfile.txt HadoopRDD[0] at textFile at <console>:27 []
+
+scala> rdd2.toDebugString
+// res3: String = 
+// (128) hugefile.txt MapPartitionsRDD[3] at textFile at <console>:27 []
+//   |   hugefile.txt HadoopRDD[2] at textFile at <console>:27 []
+
+Types of Partitioning in Apache Spark:
+
+1.Hash Partitioning in Spark
+2.Range Partitioning in Spark
+
+Hash Partitioning in Spark:
+Hash Partitioning attempts to spread the data evenly across various partitions based on the key. Object.hashCode method is used to determine the partition in Spark as partition = key.hashCode () % numPartitions.
+
+Range Partitioning in Spark:
+Some Spark RDDs have keys that follow a particular ordering, for such RDDs, range partitioning is an efficient partitioning technique. In range partitioning method, tuples having keys within the same range will appear on the same machine. Keys in a range partitioner are partitioned based on the set of sorted range of keys and ordering of keys.
+
+Spark’s range partitioning and hash partitioning techniques are ideal for various spark use cases but spark does allow users to fine tune how their RDD is partitioned, by using custom partitioner objects. Custom Spark partitioning is available only for pair RDDs i.e. RDDs with key value pairs as the elements can be grouped based on a function of each key. Spark does not provide explicit control of which key will go to which worker node but it ensures that a set of keys will appear together on some node. For instance, you might range partition the RDD based on the sorted range of keys so that elements having keys within the same range will appear on the same node or you might want to hash partition the RDD into 100 partitions so that keys that have same hash value for modulo 100 will appear on the same node.
+
+Spark Executor:
+
+ Each Node is Executor
+
+ Executor has core(eg dual cores) , so how many core according that many task will run parallel.
+
+MapReduce WordCounting Example:
+
+package com.journaldev.hadoop.mrv1.wordcount;
+
+import java.io.IOException;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+public class WordCountMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+	
+	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+		String w = value.toString();
+		context.write(new Text(w), new IntWritable(1));
+	}
+
+}
+
+Reducer Program:
+
+package com.journaldev.hadoop.mrv1.wordcount;
+
+import java.io.IOException;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class WordCountReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+	
+	public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
+		int sum = 0;
+		for (IntWritable val : values) {
+		sum += val.get();
+		}
+		context.write(key, new IntWritable(sum));
+	}
+	
+}
+
+Client Program:
+
+package com.journaldev.hadoop.mrv1.wordcount;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+
+public class WordCountClient {
+
+	public static void main(String[] args) throws Exception {
+		Job job = Job.getInstance(new Configuration());
+		job.setJarByClass(WordCountClient.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+		job.setMapperClass(WordCountMapper.class);
+		job.setReducerClass(WordCountReducer.class);
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		FileInputFormat.setInputPaths(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		boolean status = job.waitForCompletion(true);
+		if (status) {
+			System.exit(0);
+		} 
+		else {
+			System.exit(1);
+		}
+	}
+
+Spark vs. MapReduce
+Let’s compare these two technologies in detail –
+
+Spark key features	Apache Spark	Hadoop MapReduce
+Speed :	
+Ten to hundred times faster than MapReduce	
+Slower
+
+Analytics :	
+Supports streaming, machine learning, complex analytics, etc	
+Simple Map and Reduce tasks
+
+Suitable for:	
+Real-time streaming	
+Batch processing
+
+Coding	:
+Lesser lines of code	
+More lines of code
+
+Processing location	:
+In-memory	
+Local disk
+
+groupByKey:
+
+Syntax:
+
+sparkContext.textFile("hdfs://")
+                    .flatMap(line => line.split(" ") )
+                    .map(word => (word,1))
+                    .groupByKey()
+                    .map((x,y) => (x,sum(y)) )
+groupByKey can cause out of disk problems as data is sent over the network and collected on the reduce workers.
+
+reduceByKey:
+
+Syntax:
+
+sparkContext.textFile("hdfs://")
+                    .flatMap(line => line.split(" "))
+                    .map(word => (word,1))
+                    .reduceByKey((x,y)=> (x+y))
+Data is combined at each partition , only one output for one key at each partition to send over network. reduceByKey required combining all your values into another value with the exact same type.
+
+aggregateByKey:
+
+same as reduceByKey, which takes an initial value.
+
+3 parameters as input i. initial value ii. Combiner logic iii. sequence op logic
+
+*Example:* `
+
+val keysWithValuesList = Array("foo=A", "foo=A", "foo=A", "foo=A", "foo=B", "bar=C", "bar=D", "bar=D")
+    val data = sc.parallelize(keysWithValuesList)
+    //Create key value pairs
+    val kv = data.map(_.split("=")).map(v => (v(0), v(1))).cache()
+    val initialCount = 0;
+    val addToCounts = (n: Int, v: String) => n + 1
+    val sumPartitionCounts = (p1: Int, p2: Int) => p1 + p2
+    val countByKey = kv.aggregateByKey(initialCount)(addToCounts, sumPartitionCounts)
+`
+
+ouput: Aggregate By Key sum Results bar -> 3 foo -> 5
+
+combineByKey:
+
+3 parameters as input
+
+Initial value : unlike aggregateByKey, need not to pass constant always, we can pass a function a function which will return a new value.
+merging function
+combine function
+Example:`
+
+val result = rdd.combineByKey(
+                        (v) => (v,1),
+                        ( (acc:(Int,Int),v) => acc._1 +v , acc._2 +1 ) ,
+                        ( acc1:(Int,Int),acc2:(Int,Int) => (acc1._1+acc2._1) , (acc1._2+acc2._2)) 
+                        ).map( { case (k,v) => (k,v._1/v._2.toDouble) })
+        result.collect.foreach(println)
+`
+
+reduceByKey,aggregateByKey,combineByKey preferred over groupByKey
+
+ val pairs = sc.parallelize(List(("aa", 1), ("bb", 2),
+        ("aa", 10), ("bb", 20),
+        ("aa", 100), ("bb", 200)))
+
+      /* aggregateByKey is a generalized version of fold, it takes an initial accumulator (here an empty list),
+         a first lambda function to merge a value to an accumulator, and a
+         second lambda function to merge two accumulators */
+      pairs.aggregateByKey(List[Int]())(
+        (aggr, value) => value +: aggr,
+        (aggr1, aggr2) => aggr1 ++ aggr2
+      ).foreach(println _)
+      
+      /* combineByKey is a generalized version of reduce in that it adds an initial lambda
+         function to create the initial accumulator */
+      val init = (value: Int) => List(value)
+      val combiner = (aggr: List[Int], value: Int) => value :: aggr
+      val merger = (aggr1: List[Int], aggr2: List[Int]) => aggr1 ::: aggr2
+      pairs.combineByKey(
+        init, combiner, merger
+      ).foreach(println(_))
+
+
+
+Hadoop like big storage and data processing ecosystem need optimized read and write performance oriented data formats.
+
+DStream(Discretized Streams):
+
+RDD : resilient distributed datasets is a sparks basic abstraction of objects.
+
+RDD is  immutable , Fault tolerant , Lazily evaluated.
+
+Operations on RDD  are Actions and Transformations.
+
+Now lets move on to understand Dstreams.
+
+To understand Dstreams we have to understand different api's in spark and processing modes.
+
+Spark supports both batch processing and real time processing . To implement  these spark uses rdd for batch processing and dstreams for real time processing.
+
+the major difference b/w the real time and batch processing is the source of the data and the frequency at which the data is coming.
+
+To make the job easier enable re use of code written for batch processing even for real time processing in case of increase in the frequent of data spark uses the same spark engine/api (used for batch processing.)
+
+
+Live data is sent as small batches, so when we zoom in to time its same as processing the batch data.
+
+By now we should understand that Dstream  is nothing but batches of RDDs which is shown here
+
+
+Now operations done on Dstreams looks something like below
+
+
+where each box is considered as an rdd at that interval of time.
+
+As I told above it enables reuse of code.
+
+Suppose we have a code of word count in a file which is in HDFS or other data sources.   Now every 5 min a new file is coming to HDFS and we want word count of each file at that interval of time we can use the same code by using the below function.
+
+streamingRdd.foreach(
+
+RDD operation (word count)
+
+)
+
+Transformation:
+
+There are two types of transformation in DStream:
+
+Stateless Transformations
+Stateful Transformations
+
+a. Stateless Transformations
+
+The processing of each batch has no dependency on the data of previous batches. Stateless transformations are simple RDD transformations. It applies on every batch meaning every RDD in a DStream. It includes common RDD transformations like map(), filter(), reduceByKey() etc.
+Although these functions seem like applying to the whole stream, each DStream is a collection of many RDDs (batches). As a result, each stateless transformation applies to each RDD.
+
+Stateless transformations are capable of combining data from many DStreams within each time step. For example, key/value DStreams have the same join-related transformations as RDDs— cogroup(), join(), leftOuterJoin() etc.
+
+We can use these operations on DStreams to perform underlying RDD operations on each batch.
+
+If stateless transformations are insufficient, DStreams comes with an advanced operator called transform(). transform() allow operating on the RDDs inside them. The transform() allows any arbitrary RDD-to-RDD function to act on the DStream. This function gets called on each batch of data in the stream to produce a new stream.
+
+b. Stateful Transformations
+
+It uses data or intermediate results from previous batches and computes the result of the current batch. Stateful transformations are operations on DStreams that track data across time. Thus it makes use of some data from previous batches to generate the results for a new batch.
+
+The two main types are windowed operations, which act over a sliding window of time periods, and updateStateByKey(), which is used to track state across events for each key (e.g., to build up an object representing each user session).
+
+
+UpdateStateByKey()
+
+The updateStateByKey operation allows you to maintain arbitrary state while continuously updating it with new information. To use this, you will have to do two steps.
+Define the state – The state can be an arbitrary data type.
+Define the state update function – Specify with a function how to update the state using the previous state and the new values from an input stream.
+In every batch, Spark will apply the state update function for all existing keys, regardless of whether they have new data in a batch or not. If the update function returns None then the key-value pair will be eliminated.
+Spark UpdateByKey Example
+
+def updateFunc(values: Seq[Int], state: Option[Int]): Option[Int] = {
+val currentCount = values.sum
+val previousCount = state.getOrElse(0)
+Some(currentCount + previousCount)
+}
+val ssc = new StreamingContext(conf , Seconds(10))
+val line = ssc.socketTextStream("localhost", 9999)
+ssc.checkpoint("/home/asus/checkpoints/") // Here ./checkpoints/ are the directory where all checkpoints are stored.
+val words = line.flatMap(_.split(" "))
+val pairs = words.map(word => (word, 1))
+val globalCountStream = pairs.updateStateByKey(updateFunc)
+globalCountStream.print()
+ssc.start() // Start the computation
+ssc.awaitTermination()
+
+Catalyst optimizer:
+
+ Catalyst optimization allows some advanced programming language features that allow you to build an extensible 
+
+ Catalyst Optimizer supports both rule-based and cost-based optimization. 
+ In rule-based optimization the rule based optimizer use set of rule to determine how to execute the query. 
+ While the cost based optimization finds the most suitable way to carry out SQL statement. In cost-based optimization, multiple plans are generated using rules and then their cost is computed
+
+What is the need of Catalyst Optimizer?
+There are two purposes behind Catalyst’s extensible design:
+
+We want to add the easy solution to tackle various problems with Bigdata like a problem with semi-structured data and advanced data analytics.
+We want an easy way such that external developers can extend the optimizer.
+
+
+Catalyst contains the tree and the set of rules to manipulate the tree. There are specific libraries to process relational queries. There are various rule sets which handle different phases of query execution like analysis, query optimization, physical planning, and code generation to compile parts of queries to Java bytecode
+
+Spark SQL uses an optimizer called catalyst to optimize all the queries written both in spark sql and dataframe dsl. This optimizer makes queries run much faster than their RDD counterparts. Spark keeps on improving this optimizer every version in order to improve performance without changing user code.
+
+Catalyst is a modular library which is build as a rule based system. Each rule in the the framework focuses on the specific optimization. For example, rule like ConstantFolding focuses on removing constant expression from the query. For more information catalyst, you can refer to my earlier talk on anatomy of dataframe.
+
+In earlier versions of spark, if we wanted add our own optimizations, we need to change the source code of spark. This is not preferable in many cases where optimizations are only applicable to the domain or user specific problems. So developer community wanted to have a pluggable way to add their optimizations to the catalyst in runtime.
+
+In Spark 2.0, we have an experimental API for adding user defined custom optimizations. In the rest of the blog I will be discussing about how to write an optimization rule and add it to catalyst.
+
+Optimized plan for a dataframe
+Before we write our optimization rule, let’s understand how to access the optimized plan in spark. The below code shows a simple example
+
+val df = sparkSession.read.option("header","true").csv("src/main/resources/sales.csv")
+val multipliedDF = df.selectExpr("amountPaid * 1")
+println(multipliedDF.queryExecution.optimizedPlan.numberedTreeString)
+In above code, we have loaded a csv file and multiplied one to one of the column. We can look at the optimized plan for that dataframe using optimizedPlan object on queryExecution. queryExecution allows us to access all the information related execution of the query. Optimized plan is one of them.
+
+Every plan in spark is represented as a tree. So numberedTreeString method pretty prints the optimized plan. When we run this code we get below result.
+
+00 Project [(cast(amountPaid#3 as double) * 1.0) AS (amountPaid * 1)#5]
+01 +- Relation[transactionId#0,customerId#1,itemId#2,amountPaid#3] csv
+All plans are read bottom to top. The below are the two nodes of tree
+
+01 Relation - Signifies the dataframe we created from csv file
+
+00 Project - Signifies the projection
+
+You can observe some of the casts added by the spark for correct results.
+
+Writing an optimizer rule
+From the above plan, it’s clear that its going to multiply 1.0 to each of the value of column. But it’s not optimal plan. Whenever we see 1 in multiplication, we know it’s going to return exact same value. We can use this knowledge to write a rule and add smartness to the optimizer.
+
+The following code show how to write such a rule.
+
+object MultiplyOptimizationRule extends Rule[LogicalPlan] {
+    def apply(plan: LogicalPlan): LogicalPlan = plan transformAllExpressions {
+      case Multiply(left,right) if right.isInstanceOf[Literal] &&
+        right.asInstanceOf[Literal].value.asInstanceOf[Double] == 1.0 =>
+        println("optimization of one applied")
+        left
+    }
+  }
+Here we are extending from Rule which operates on logical plan. Most of the rules are written as pattern matching in scala. In code, we are checking is the right operand is literal and it’s value is 1.0. Here we are very specific about where value 1 should appear. If it appears on the left it will not optimize. As it’s for example, for brevity I have not included checking for left also. But you can easily add.
+
+So whenever we have right value as 1, we will skip the right expression altogether and return left.
+
+Integrating our optimizer rule
+Once we have our rule, next step is to add to the optimizer. The below code shows that.
+
+sparkSession.experimental.extraOptimizations = Seq(MultiplyOptimizationRule)
+On spark session, we have an experimental object which exposes all the experimental API’s. Using this API, you can add list of custom rules to catalyst with extraOptimizations.
+
+Using the custom optimization
+Once we have our rule added, we need to check it is applied or not. We will do same manipulation again as below code.
+
+val multipliedDFWithOptimization = df.selectExpr("amountPaid * 1")
+println("after optimization")
+println(multipliedDFWithOptimization.queryExecution.
+optimizedPlan.numberedTreeString)
+If we observe the output now,
+
+00 Project [cast(amountPaid#3 as double) AS (amountPaid * 1)#7]
+01 +- Relation[transactionId#0,customerId#1,itemId#2,amountPaid#3] csv
+You can observe now that multiplication is gone. This denotes the our optimization is applied. You can access complete code here.
+
+In Spark 2.0 users can add their own custom rules to catalyst to optimize their code. This makes spark more developer friendly and powerful generic engine.
+
+Trees
+
+A tree is the main data type in the catalyst. A tree contains node object. For each node, there is a node. A node can have one or more children. New nodes are defined as subclasses of TreeNode class. These objects are immutable in nature. The objects can be manipulated using functional transformation. See RDD Transformations and Actions Guide for more details about Functional transformations.
+For example, if we have three node classes: worth, attribute, and sub in which-
+
+worth(value: Int): a constant value
+attribute(name: String)
+sub (left: TreeNode, right: TreeNode): subtraction of two expressions.
+spark-sql-catalyst-optimizer-tree-example
+spark-sql-catalyst-optimizer-tree-example
+
+Then a tree will look like-
+
+4.2. Rules
+
+We can manipulate tree using rules. We can define rules as a function from one tree to another tree. With rule we can run arbitrary code on input tree, the common approach to use a pattern matching function and replace subtree with a specific structure. In a tree with the help of transform function, we can recursively apply pattern matching on all the node of a tree. We get the pattern that matches each pattern to a result.
+
+For example:
+
+tree.transform {case Sub(worth(c1),worth(c2)) => worth(c1+c2) }
+The expression that is passed during pattern matching to transform is a partial function. By partial function, it means it only needs to match to a subset of all possible input trees. Catalyst will see, to which part of a tree the given rule applies, and will automatically skip over the tree that does not match. With the same transform call, the rule can match multiple patterns.
+
+For example:
+
+tree.transform {
+case Sub(worth(c1), worth(c2)) =>worth(c1-c2)
+case Sub(left , worth(0)) => left
+case Sub(worth(0), right) => right
+}
+
+To fully transform a tree, rule may be needed to execute multiple time.
+Catalyst work by grouping rules into batches and these batches are executed until a fixed point is achieved. Fixed point is a point after which tree stops changing even after applying rules.
+
+5. Spark SQL Execution Plan
+After the detailed introduction of Apache Spark SQL catalyst optimizer, now we will discuss the Spark SQL query execution phases. In four phases we use Catalyst’s general tree transformation framework:
+
+Analysis
+Logical Optimization
+Physical planning
+Code generation
+Spark-SQL-execution-query-plan
+Phases-of-Spark-SQL-Execution-plan
+
+5.1. Analysis
+
+Spark SQL Optimization starts from relation to be computed. It is computed either from abstract syntax tree (AST) returned by SQL parser or dataframe object created using API. Both may contain unresolved attribute references or relations. By unresolved attribute, it means we don’t know its type or have not matched it to an input table. Spark SQL make use of Catalyst rules and a Catalog object that track data in all data sources to resolve these attributes. It starts by creating an unresolved logical plan, and then apply the following steps:
+
+Search relation BY NAME FROM CATALOG.
+Map the name attribute, for example, col, to the input provided given operator’s children.
+Determine which attributes match to the same value to give them unique ID.
+Propagate and push type through expressions.
+5.2. Logical Optimization
+In this phase of Spark SQL optimization, the standard rule-based optimization is applied to the logical plan. It includes constant folding, predicate pushdown, projection pruning and other rules. It became extremely easy to add a rule for various situations.
+
+5.3. Physical Planning
+
+There are about 500 lines of code in the physical planning rules. In this phase, one or more physical plan is formed from the logical plan, using physical operator matches the Spark execution engine. And it selects the plan using the cost model. It uses Cost-based optimization only to select join algorithms. For small relation SQL uses broadcast join, the framework supports broader use of cost-based optimization. It can estimate the cost recursively for the whole tree using the rule.
+Rule-based physical optimization, such as pipelining projections or filters into one Spark map Operation is also carried out by the physical planner. Apart from this, it can also push operations from the logical plan into data sources that support predicate or projection pushdown.
+
+5.4. Code Generation
+
+The final phase of Spark SQL optimization is code generation. It involves generating Java bytecode to run on each machine. Catalyst uses the special feature of Scala language, “Quasiquotes” to make code generation easier because it is very tough to build code generation engines. Quasiquotes lets the programmatic construction of abstract syntax trees (ASTs) in the Scala language, which can then be fed to the Scala compiler at runtime to generate bytecode. With the help of a catalyst, we can transform a tree representing an expression in SQL to an AST for Scala code to evaluate that expression, and then compile and run the generated code.
+
+Tungsten:
+
+Tungsten is the codename for the umbrella project to make changes to Apache Spark’s execution engine that focuses on substantially improving the efficiency of memory and CPU for Spark applications, to push performance closer to the limits of modern hardware. This effort includes the following initiatives:
+
+Memory Management and Binary Processing:
+ leveraging application semantics to manage memory explicitly and eliminate the overhead of JVM object model and garbage collection
+
+Cache-aware computation:
+ algorithms and data structures to exploit memory hierarchy
+
+Code generation:
+ using code generation to exploit modern compilers and CPUs
+
+No virtual function dispatches: 
+this reduces multiple CPU calls which can have a profound impact on performance when dispatching billions of times.
+
+Intermediate data in memory vs CPU registers: 
+Tungsten Phase 2 places intermediate data into CPU registers. This is an order of magnitudes reduction in the number of cycles to obtain data from the CPU registers instead of from memory
+
+Loop unrolling and SIMD: 
+Optimize Apache Spark’s execution engine to take advantage of modern compilers and CPUs’ ability to efficiently compile and execute simple for loops (as opposed to complex function call graphs).
+
+The focus on CPU efficiency is motivated by the fact that Spark workloads are increasingly bottlenecked by CPU and memory use rather than IO and network communication. The trend is shown by recent research on the performance of big data workloads.
+
+2014 witnessed Spark setting the world record in large-scale sorting and saw major improvements across the entire engine from Python to SQL to machine learning. Performance optimization, however, is a never ending process.
+
+Project Tungsten will be the largest change to Spark’s execution engine since the project’s inception. It focuses on substantially improving the efficiency of memory and CPU for Spark applications, to push performance closer to the limits of modern hardware. This effort includes three initiatives:
+
+Memory Management and Binary Processing: leveraging application semantics to manage memory explicitly and eliminate the overhead of JVM object model and garbage collection
+Cache-aware computation: algorithms and data structures to exploit memory hierarchy
+Code generation: using code generation to exploit modern compilers and CPUs
+The focus on CPU efficiency is motivated by the fact that Spark workloads are increasingly bottlenecked by CPU and memory use rather than IO and network communication. This trend is shown by recent research on the performance of big data workloads (Ousterhout et al) and we’ve arrived at similar findings as part of our ongoing tuning and optimization efforts for Databricks Cloud customers.
+
+Why is CPU the new bottleneck? There are many reasons for this. One is that hardware configurations offer increasingly large aggregate IO bandwidth, such as 10Gbps links in networks and high bandwidth SSD’s or striped HDD arrays for storage. From a software perspective, Spark’s optimizer now allows many workloads to avoid significant disk IO by pruning input data that is not needed in a given job. In Spark’s shuffle subsystem, serialization and hashing (which are CPU bound) have been shown to be key bottlenecks, rather than raw network throughput of underlying hardware. All these trends mean that Spark today is often constrained by CPU efficiency and memory pressure rather than IO.
+
+1. Memory Management and Binary Processing
+
+Applications on the JVM typically rely on the JVM’s garbage collector to manage memory. The JVM is an impressive engineering feat, designed as a general runtime for many workloads. However, as Spark applications push the boundary of performance, the overhead of JVM objects and GC becomes non-negligible.
+
+Java objects have a large inherent memory overhead. Consider a simple string “abcd” that would take 4 bytes to store using UTF-8 encoding. JVM’s native String implementation, however, stores this differently to facilitate more common workloads. It encodes each character using 2 bytes with UTF-16 encoding, and each String object also contains a 12 byte header and 8 byte hash code, as illustrated by the following output from the the Java Object Layout tool.
+
+java.lang.String object internals:
+OFFSET  SIZE   TYPE DESCRIPTION                    VALUE
+     0     4        (object header)                ...
+     4     4        (object header)                ...
+     8     4        (object header)                ...
+    12     4 char[] String.value                   []
+    16     4    int String.hash                    0
+    20     4    int String.hash32                  0
+Instance size: 24 bytes (reported by Instrumentation API)
+A simple 4 byte string becomes over 48 bytes in total in the JVM object model!
+
+The other problem with the JVM object model is the overhead of garbage collection. At a high level, generational garbage collection divides objects into two categories: ones that have a high rate of allocation/deallocation (the young generation) ones that are kept around (the old generation). Garbage collectors exploit the transient nature of young generation objects to manage them efficiently. This works well when GC can reliably estimate the life cycle of objects, but falls short if the estimation is off (i.e. some transient objects spill into the old generation). Since this approach is ultimately based on heuristics and estimation, eeking out performance can require the “black magic” of GC tuning, with dozens of parameters to give the JVM more information about the life cycle of objects.
+
+Spark, however, is not just a general-purpose application. Spark understands how data flows through various stages of computation and the scope of jobs and tasks. As a result, Spark knows much more information than the JVM garbage collector about the life cycle of memory blocks, and thus should be able to manage memory more efficiently than the JVM.
+
+To tackle both object overhead and GC’s inefficiency, we are introducing an explicit memory manager to convert most Spark operations to operate directly against binary data rather than Java objects. This builds on sun.misc.Unsafe, an advanced functionality provided by the JVM that exposes C-style memory access (e.g. explicit allocation, deallocation, pointer arithmetics). Furthermore, Unsafe methods are intrinsic, meaning each method call is compiled by JIT into a single machine instruction.
+
+In certain areas, Spark has already started using explicitly managed memory. Last year, Databricks contributed a new Netty-based network transport that explicitly manages all network buffers using a jemalloc like memory manager. That was critical in scaling up Spark’s shuffle operation and winning the Sort Benchmark.
+
+The first pieces of this will appear in Spark 1.4, which includes a hash table that operates directly against binary data with memory explicitly managed by Spark. Compared with the standard Java HashMap, this new implementation much less indirection overhead and is invisible to the garbage collector.
+
+This is still work-in-progress, but initial performance results are encouraging. As shown above, we compare the throughput of aggregation operations using different hash map: one with our new hash map’s heap mode, one with offheap, and one with java.util.HashMap. The new hash table supports over 1 million aggregation operations per second in a single thread, about 2X the throughput of java.util.HashMap. More importantly, without tuning any parameters, it has almost no performance degradation as memory utilization increases, while the JVM default one eventually thrashes due to GC.
+
+In Spark 1.4, this hash map will be used for aggregations for DataFrames and SQL, and in 1.5 we will have data structures ready for most other operations, such as sorting and joins. This will in many cases eliminating the need to tune GC to achieve high performance.
+
+2. Cache-aware Computation
+
+Before we explain cache-aware computation, let’s revisit “in-memory” computation. Spark is widely known as an in-memory computation engine. What that term really means is that Spark can leverage the memory resources on a cluster efficiently, processing data at a rate much higher than disk-based solutions. However, Spark can also process data orders magnitude larger than the available memory, transparently spill to disk and perform external operations such as sorting and hashing.
+
+Similarly, cache-aware computation improves the speed of data processing through more effective use of L1/ L2/L3 CPU caches, as they are orders of magnitude faster than main memory. When profiling Spark user applications, we’ve found that a large fraction of the CPU time is spent waiting for data to be fetched from main memory. As part of Project Tungsten, we are designing cache-friendly algorithms and data structures so Spark applications will spend less time waiting to fetch data from memory and more time doing useful work.
+
+Consider sorting of records as an example. A standard sorting procedure would store an array of pointers to records and use quicksort to swap pointers until all records are sorted. Sorting in general has good cache hit rate due to the sequential scan access pattern. Sorting a list of pointers, however, has a poor cache hit rate because each comparison operation requires dereferencing two pointers that point to randomly located records in memory.
+
+So how do we improve the cache locality of sorting? A very simple approach is to store the sort key of each record side by side with the pointer. For example, if the sort key is a 64-bit integer, then we use 128-bit (64-bit pointer and 64-bit key) to store each record in the pointers array. This way, each quicksort comparison operation only looks up the pointer-key pairs in a linear fashion and requires no random memory lookup. Hopefully the above illustration gives you some idea about how we can redesign basic operations to achieve higher cache locality.
+
+How does this apply to Spark? Most distributed data processing can be boiled down to a small list of operations such as aggregations, sorting, and join. By improving the efficiency of these operations, we can improve the efficiency of Spark applications as a whole. We have already built a version of sort that is cache-aware that is 3X faster than the previous version. This new sort will be used in sort-based shuffle, high cardinality aggregations, and sort-merge join operator. By the end of this year, most Spark’s lowest level algorithms will be upgraded to be cache-aware, increasing the efficiency of all applications from machine learning to SQL.
+
+3. Code Generation
+
+About a year ago Spark introduced code generation for expression evaluation in SQL and DataFrames. Expression evaluation is the process of computing the value of an expression (say “age > 35 && age < 40”) on a particular record. At runtime, Spark dynamically generates bytecode for evaluating these expressions, rather than stepping through a slower interpreter for each row. Compared with interpretation, code generation reduces the boxing of primitive data types and, more importantly, avoids expensive polymorphic function dispatches.
+
+In an earlier blog post, we demonstrated that code generation could speed up many TPC-DS queries by almost an order of magnitude. We are now broadening the code generation coverage to most built-in expressions. In addition, we plan to increase the level of code generation from record-at-a-time expression evaluation to vectorized expression evaluation, leveraging JIT’s capabilities to exploit better instruction pipelining in modern CPUs so we can process multiple records at once.
+
+We’re also applying code generation in areas beyond expression evaluations to optimize the CPU efficiency of internal components. One area that we are very excited about applying code generation is to speed up the conversion of data from in-memory binary format to wire-protocol for shuffle. As mentioned earlier, shuffle is often bottlenecked by data serialization rather than the underlying network. With code generation, we can increase the throughput of serialization, and in turn increase shuffle network throughput.
+
+The above chart compares the performance of shuffling 8 million complex rows in one thread using the Kryo serializer and a code generated custom serializer. The code generated serializer exploits the fact that all rows in a single shuffle have the same schema and generates specialized code for that. This made the generated version over 2X faster to shuffle than the Kryo version.
+
+Tungsten and Beyond
+
+Project Tungsten is a broad initiative that will influence the design of Spark’s core engine over the next several releases. The first pieces will land in Spark 1.4, which includes explicitly managed memory for aggregation operations in Spark’s DataFrame API as well as customized serializers. Expanded coverage of binary memory management and cache-aware data structures will appear in Spark 1.5. Several parts of project Tungsten leverage the DataFrame model. We will also retrofit the improvements onto Spark’s RDD API whenever possible.
+
+There are also a handful of longer term possibilities for Tungsten. In particular, we plan to investigate compilation to LLVM or OpenCL, so Spark applications can leverage SSE/SIMD instructions out of modern CPUs and the wide parallelism in GPUs to speed up operations in machine learning and graph computation.
+
+The goal of Spark has always been to offer a single platform where users can get the best distributed algorithms for any data processing task. Performance is a key part of that goal, and Project Tungsten aims to let Spark applications run at the speed offered by bare metal. Stay tuned for the Databricks blog for longer term articles on the components of Project Tungsten as they ship. We’ll also be reporting details about the project at the upcoming Spark Summit in San Francisco in June.
+
+Note: hand-drawing diagrams inspired by our friends at Confluent (Martin Kleppmann)
+Scala fold, foldLeft and foldRight:
+
+One of the functional programming tricks in Scala that I recently learned and enjoyed is folding, namely the fold, foldLeft and foldRight functions. As implied by their names, the three methods share many concepts in common, but there are also subtle differences in their implementations.
+
+As I am a firm believer of learning by examples, I put together some code snippets (many thanks to this post) that hopefully could help you better understand the nitty-gritty of fold, foldLeft and foldRight.
+
+Common folding concepts
+
+Folding is a very powerful operation on Scala Collections. First thing first, let’s take a look at the signatures of the three implementations of folding, i.e. fold, foldLeft and foldRight.
+
+def fold[A1 >: A](z: A1)(op: (A1, A1) ⇒ A1): A1
+def foldLeft[B](z: B)(op: (B, A) ⇒ B): B
+def foldRight[B](z: B)(op: (A, B) ⇒ B): B
+In essence, these functions process a data structure recursively through use of a pre-defined combining operation op and an initial value z, then gives a return value. If used correctly, these methods can often do a lot of complicated things with a small amount of code.
+
+To illustrate the common concepts among the three folding functions (we will save the explantion of their differences for the next section), I will take foldLeft as an example here for 1) it is relatively easier to understand and 2) it arguably is the most frequently used folding technique at least based on my experiences.
+
+Get started
+Let’s get started with a very simple example - calcuate the summation of a list of integers with foldLeft, in case you don’t really have too much experience with this operation.
+
+val inputList: List[Int] = List(1, 3, 5)
+inputList.foldLeft(0) { (acc, i) => acc + i }
+// res1: Int = 9
+or, even simpler, by taking advantage of a few Scala’s “type-less” tricks.
+
+inputList.foldLeft(0)(_ + _)
+// res1: Int = 9
+Very simple and elegant, isn’t it? But, if you were as curious as I am, you might wonder what is going on under the hood. Well, let’s take a closer look at it.
+
+As specified by its signature, the foldLeft function here takes two argument 1) an initial value of 0 and 2) a pre-defined combining operation op that, again, takes two arguments, i.e. the accumulated value acc and the current value i. And you might have already guessed, foldLeft processes the list of intergers from left to right.
+
+That is, at the start of execution, the function will invoke the operation op on the given intial value and the first item of the list. Note that, if the list was empty, foldLeft would terminate and return the initial value.
+
+op(acc = 0, i = 1) // 1
+The result 1 is passed into acc as the accumulated value to a subsequent invocation of op on the next value of the list.
+
+op(acc = 1, i = 3) // 4
+This process repeats for each item of the list until all items in the list have been iterated over from left to right and the final result will be returned. You can almost visualize the entire process as the following.
+
+op(op(op(0, 1), 3), 5) // 9
+Alright, I have probably spent too much time here, but I want to make sure you have the basics ready for the more fun stuff.
+
+More examples
+Here are more examples for foldLeft that I think are really interesting. Note that some examples may have better solutions, but, for the sake of learning, we will only use foldLeft to solve them here.
+
+Length
+
+Write the foldLeft equivalent of List.length.
+
+def len(list: List[Any]): Int = list.foldLeft(0) { (count, _) => count + 1 }
+Last
+
+Write the foldLeft equivalent of List.last.
+
+def last[A](list: List[A]): A = list.foldLeft[A](list.head) { (_, cur) => cur }
+Average
+
+Calculate the average of values from a given List[Double].
+
+def average(list: List[Double]): Double = list match {
+  case head :: tail => tail.foldLeft((head, 1.0)) { (avg, cur) =>
+    ((avg._1 * avg._2 + cur)/(avg._2 + 1.0), avg._2 + 1.0)
+  }._1
+  case Nil => NaN
+}
+You can probably achieve the same goal by combining the calculation of sum and length of a list, but I would like to show you this more “complicated” approach. One of the reasons is that, if you look at the signature of foldLeft, the op: (B, A) => B operation doesn’t have to take in parameters of the same type, as long as B matches with the type of return value and initial value, and I think this is a quite powerful feature in many cases.
+
+def foldLeft[B](z: B)(op: (B, A) ⇒ B): B
+This example takes advantage of it, where B here is a Tuple2 object (Double, Double). Note that we usually use TupleX (X < 23, a quite arbitrary limit) to bundle an ordered sequences of values and access it via ._1, ._2 and etc. Also, if you haven’t noticed already, Scala converts a comma-delimited series of values in parentheses into the appropriate TupleX automatically.
+
+Get
+
+Get the value given an integer index of a list and throw an error if out of bound.
+
+def get[A](list: List[A], idx: Int): A =
+  list.tail.foldLeft((list.head, 0)) {
+    (r, cur) => if (r._2 == idx) r else (c, r._2 + 1)
+  } match {
+    case (result, index) if (idx == index) => result
+    case _ => throw new Exception("Bad index!")
+  }
+Here is another foldLeft example with Tuple2 to help you understand this trick better. The second part of the snippet is what we call pattern matching in Scala. It is also a very powerful technique that probably worths its own post, but hopefully you at least get a taste of how it can be used from this simple example.
+
+Reverse
+
+Reverse the order of a list.
+
+def reverse[A](list: List[A]): List[A] =
+  list.foldLeft(List[A]()) { (r,c) => c :: r }
+Hopefully you have learnt a thing or two about foldLeft (and folding in general) through these examples. As you can see, folding is really a useful technique to process a sequence of values. Next time, when you need to get something out of Scala Collections, you should think if you can achieve the goal via folding.
+
+Difference in implementations
+
+As I mentioned, fold, foldLeft and foldRight share many concepts in common and we have already gone through some of their applications. Now is the time that we take a look at their subtle differences so that we know how to use them correctly and more efficiently.
+
+Order of operation
+
+The primary difference among fold, foldLeft and foldRight is the order in which the combining operation op iterates through the sequence. As their names implied, foldLeft starts from the left side (the first value) and the values are added to the combining operation in left-to-right order; foldRight, on the contrary, starts from the right side (the last value) and the values are processed in right-to-left order. THe more interesting operation to me is the fold, which goes in no particular order.
+
+There are some advantages and contraints of fold because of this implementation and we will talk more about it later, but now let’s revisit our simple summation example.
+
+val list: List[Int] = List(1, 3, 5, 7, 9)
+
+list.foldLeft(0)(_ + _)
+// This is the only valid order
+0 + 1 = 1
+        1 + 3 = 4
+                4 + 5 = 9
+                        9 + 7 = 16
+                                16 + 9 = 25 // done
+                                
+list.foldRight(0)(_ + _)
+// This is the only valid order
+0 + 9 = 9
+        9 + 7 = 16
+                16 + 5 = 21
+                         21 + 3 = 24
+                                  24 + 1 = 25 // done
+                                  
+list.fold(0)(_ + _) // 25
+// One of the many valid orders
+0 + 1 = 1    0 + 3 = 3             0 + 5 = 5
+        1            3 + 7 = 10            5 + 9 = 14    
+        1                    10          +         14 = 24
+        1                        +                      24 = 25 // done
+As you can see, foldLeft and foldRight are linear operations, while fold is allowed to be a tree operation, which is quite nice for parallelization. But, in order for this implemetation to be possible, there are some constraints.
+
+First of all, the starting value must be neutral since it may be introduced multiple times (e.g., 0 appears 3 times in our toy example) and it should not change final results. A few neutral values are 0 for addition, 1 for multiplication and Nil for list operation.
+
+Secondly, as specified in its signature, the combining operation op must result in the same type as the type of the arguments it takes in and this type A1 must be a supertype of the object being folding A.
+
+def fold[A1 >: A](z: A1)(op: (A1, A1) ⇒ A1): A1
+Another use case of fold
+Somewhat irrelevant, I would like to introduce you another use case of fold on scala.Option. It maps a function foo over the value of an Option (if any) or returns an alternative value alt if it is absent.
+
+// Option.fold(alt)(foo)
+
+val opt1: Option[Int] = Some(5)
+opt1.fold(0)(_ + 1)
+// res1: Int = 6
+
+val opt2: Option[Int] = None
+opt2.fold(0)(_ + 1)
+// res2: Int = 0
+You can essentially achieve the same result with map/getOrElse and there was a discussion on this topic if you are interested.
+
+Option.map(foo).getOrElse(alt)
+I personally prefer the map/getOrElse way of doing things, since it is more intuitive and less confusing given the two different use cases of fold.
+
+
+In general, all 6 fold functions apply a binary operator to each element of a collection. The result of each step is passed on to the next step (as input to one of the binary operator's two arguments). This way we can cumulate a result.
+
+reduceLeft and reduceRight cumulate a single result.
+
+foldLeft and foldRight cumulate a single result using a start value.
+
+scanLeft and scanRight cumulate a collection of intermediate cumulative results using a start value.
+
+
+With a collection of elements abc and a binary operator add we can explore what the different fold functions do when going forwards from the LEFT element of the collection (from A to C):
+
+val abc = List("A", "B", "C")
+
+def add(res: String, x: String) = { 
+  println(s"op: $res + $x = ${res + x}")
+  res + x
+}
+
+abc.reduceLeft(add)
+// op: A + B = AB
+// op: AB + C = ABC    // accumulates value AB in *first* operator arg `res`
+// res: String = ABC
+
+abc.foldLeft("z")(add) // with start value "z"
+// op: z + A = zA      // initial extra operation
+// op: zA + B = zAB
+// op: zAB + C = zABC
+// res: String = zABC
+
+abc.scanLeft("z")(add)
+// op: z + A = zA      // same operations as foldLeft above...
+// op: zA + B = zAB
+// op: zAB + C = zABC
+// res: List[String] = List(z, zA, zAB, zABC) // maps intermediate results
+
+From RIGHT and backwards...
+
+If we start with the RIGHT element and go backwards (from C to A) we'll notice that now the second argument to our binary operator accumulates the result (the operator is the same, we just switched the argument names to make their roles clear):
+
+def add(x: String, res: String) = {
+  println(s"op: $x + $res = ${x + res}")
+  x + res
+}
+
+abc.reduceRight(add)
+// op: B + C = BC
+// op: A + BC = ABC  // accumulates value BC in *second* operator arg `res`
+// res: String = ABC
+
+abc.foldRight("z")(add)
+// op: C + z = Cz
+// op: B + Cz = BCz
+// op: A + BCz = ABCz
+// res: String = ABCz
+
+abc.scanRight("z")(add)
+// op: C + z = Cz
+// op: B + Cz = BCz
+// op: A + BCz = ABCz
+// res: List[String] = List(ABCz, BCz, Cz, z)
+.
+
+De-cumulate
+From LEFT and forwards...
+
+If instead we were to de-cumulate some result by subtraction starting from the LEFT element of a collection, we would cumulate the result through the first argument res of our binary operator minus:
+
+val xs = List(1, 2, 3, 4)
+
+def minus(res: Int, x: Int) = {
+  println(s"op: $res - $x = ${res - x}")
+  res - x
+}
+
+xs.reduceLeft(minus)
+// op: 1 - 2 = -1
+// op: -1 - 3 = -4  // de-cumulates value -1 in *first* operator arg `res`
+// op: -4 - 4 = -8
+// res: Int = -8
+
+xs.foldLeft(0)(minus)
+// op: 0 - 1 = -1
+// op: -1 - 2 = -3
+// op: -3 - 3 = -6
+// op: -6 - 4 = -10
+// res: Int = -10
+
+xs.scanLeft(0)(minus)
+// op: 0 - 1 = -1
+// op: -1 - 2 = -3
+// op: -3 - 3 = -6
+// op: -6 - 4 = -10
+// res: List[Int] = List(0, -1, -3, -6, -10)
+
+From RIGHT and backwards...
+
+But look out for the xRight variations now! Remember that the (de-)cumulated value in the xRight variations is passed to the second parameter res of our binary operator minus:
+
+def minus(x: Int, res: Int) = {
+  println(s"op: $x - $res = ${x - res}")
+  x - res
+}
+
+xs.reduceRight(minus)
+// op: 3 - 4 = -1
+// op: 2 - -1 = 3  // de-cumulates value -1 in *second* operator arg `res`
+// op: 1 - 3 = -2
+// res: Int = -2
+
+xs.foldRight(0)(minus)
+// op: 4 - 0 = 4
+// op: 3 - 4 = -1
+// op: 2 - -1 = 3
+// op: 1 - 3 = -2
+// res: Int = -2
+
+xs.scanRight(0)(minus)
+// op: 4 - 0 = 4
+// op: 3 - 4 = -1
+// op: 2 - -1 = 3
+// op: 1 - 3 = -2
+// res: List[Int] = List(-2, 3, -1, 4, 0) 
+The last List(-2, 3, -1, 4, 0) is maybe not what you would intuitively expect!
+
+As you see, you can check what your foldX is doing by simply running a scanX instead and debug the cumulated result at each step.
+
+Bottom line
+Cumulate a result with reduceLeft or reduceRight.
+Cumulate a result with foldLeft or foldRight if you have a start value.
+Cumulate a collection of intermediate results with scanLeft or scanRight.
+
+Use a xLeft variation if you want to go forwards through the collection.
+
+Use a xRight variation if you want to go backwards through the collection.
+
+
+
+
